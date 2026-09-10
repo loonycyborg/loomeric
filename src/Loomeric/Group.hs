@@ -9,7 +9,7 @@ import GHC.Num.Primitives (absI#, sgnI#)
 import Data.List.NonEmpty as NE
 import GHC.Num.Natural
 import GHC.Num.Integer
-import Prelude (($), fst, snd, not, Eq(..), error)
+import Prelude (($), fst, snd, not, uncurry, Eq(..), error)
 import Control.Applicative
 import Control.Monad
 import Control.Category
@@ -46,7 +46,9 @@ class MultiplicativeMonoid a => MultiplicativeGroup a where
 
 type Fractional a = MultiplicativeGroup a
 
-class (AdditiveMonoid a, MultiplicativeMonoid a) => Semiring a
+class (AdditiveMonoid a, MultiplicativeMonoid a) => Semiring a where
+    linearCombination :: Foldable f => f (a, a) -> a
+    linearCombination = sum . concatMap ((:[]) . uncurry (*))
 
 class (AdditiveGroup a, Semiring a) => Ring a where
 
