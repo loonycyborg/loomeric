@@ -1,0 +1,18 @@
+cabal-version: 3.0
+name: loomeric-prelude
+version: 0.1.0.0
+
+homepage: https://github.com/loonycyborg/loomeric
+bug-reports: https://github.com/loonycyborg/loomeric/issues
+license: BSD-3-Clause-Attribution
+
+common common-options
+    default-language: GHC2021
+    default-extensions:
+        NoImplicitPrelude
+
+library
+    import: common-options
+    hs-source-dirs: src
+    exposed-modules: LoomericPrelude Loomeric.Group Loomeric.Conversions
+    build-depends: base, ghc-bignum
