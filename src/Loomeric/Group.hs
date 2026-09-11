@@ -9,6 +9,8 @@ import GHC.Num.Primitives (absI#, sgnI#)
 import Data.List.NonEmpty as NE
 import GHC.Num.Natural
 import GHC.Num.Integer
+import GHC.Float ( integerToFloat#, naturalToFloat# )
+import GHC.Natural ( naturalToInteger )
 import Prelude (($), fst, snd, not, uncurry, Eq(..), error)
 import Control.Applicative
 import Control.Monad
@@ -49,8 +51,10 @@ type Fractional a = MultiplicativeGroup a
 class (AdditiveMonoid a, MultiplicativeMonoid a) => Semiring a where
     linearCombination :: Foldable f => f (a, a) -> a
     linearCombination = sum . concatMap ((:[]) . uncurry (*))
+    fromNatural :: Natural -> a
 
 class (AdditiveGroup a, Semiring a) => Ring a where
+    fromInteger :: Integer -> a
 
 class (MultiplicativeGroup a, Ring a) => Field a where
     (**) :: a -> a -> a
@@ -101,7 +105,8 @@ instance MultiplicativeSemigroup Word where
 instance MultiplicativeMonoid Word where
     one = 1
 
-instance Semiring Word
+instance Semiring Word where
+    fromNatural = naturalToWord
 
 instance OrderedSemiring Word where
     signum x = bool 1 0 $ x == 0
@@ -137,8 +142,10 @@ instance MultiplicativeSemigroup Int where
 instance MultiplicativeMonoid Int where
     one = 1
 
-instance Semiring Int
-instance Ring Int
+instance Semiring Int where
+    fromNatural = integerToInt . naturalToInteger
+instance Ring Int where
+    fromInteger = integerToInt
 instance OrderedSemiring Int where
     abs (I# x) = I# $ absI# x
     signum (I# x) = I# $ sgnI# x
@@ -168,8 +175,10 @@ instance MultiplicativeGroup Float where
     F# a / F# b = F# $ divideFloat# a b
     inverse (F# a) = F# $ divideFloat# 1.0# a
 
-instance Semiring Float
-instance Ring Float
+instance Semiring Float where
+    fromNatural x = F# $ naturalToFloat# x
+instance Ring Float where
+    fromInteger x = F# $ integerToFloat# x
 instance OrderedSemiring Float where
     signum x
         | x > 0     = 1
@@ -194,7 +203,8 @@ instance MultiplicativeSemigroup Natural where
 instance MultiplicativeMonoid Natural where
     one = naturalOne
 
-instance Semiring Natural
+instance Semiring Natural where
+    fromNatural = id
 instance OrderedSemiring Natural where
     signum = naturalSignum
     abs = id
@@ -225,8 +235,10 @@ instance MultiplicativeSemigroup Integer where
 instance MultiplicativeMonoid Integer where
     one = integerOne
 
-instance Semiring Integer
-instance Ring Integer
+instance Semiring Integer where
+    fromNatural = naturalToInteger
+instance Ring Integer where
+    fromInteger = id
 
 instance OrderedSemiring Integer where
     abs = integerAbs
