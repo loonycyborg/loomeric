@@ -51,4 +51,6 @@ instance SignTruncate Word where
 instance SignTruncate Natural where
     signTruncate = naturalFromInteger
 
+instance SignTruncate Int
+instance SignTruncate Integer
 instance SignTruncate Float
