@@ -20,6 +20,10 @@ import Data.Bool
 
 import Loomeric.Conversions
 
+infixr 8 **
+infixl 7 *, /, /?, `quot`, `rem`
+infixl 6 +, -, -?, -!
+
 class AdditiveSemigroup a where
     (+) :: a -> a -> a
     sum1 :: Foldable1 f => f a -> a
