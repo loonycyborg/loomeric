@@ -1,4 +1,4 @@
-{-# LANGUAGE NoImplicitPrelude, MagicHash, UnboxedTuples #-}
+{-# LANGUAGE NoImplicitPrelude, MagicHash, UnboxedTuples, DefaultSignatures #-}
 module Loomeric.Group where
 
 import Data.Ord
@@ -34,6 +34,15 @@ class AdditiveSemigroup a => AdditiveMonoid a where
     sum :: Foldable f => f a -> a
     sum = foldl' (+) zero
 
+class AdditiveMonoid a => AdditivePartialGroup a where
+    (-?) :: a -> a -> Maybe a
+    default (-?) :: PeanoSystem a => a -> a -> Maybe a
+    a -? b = case decrement b of
+        Nothing -> Just a
+        Just p  -> (-? p) =<< decrement a
+    (-!) :: a -> a -> a
+    a -! b = fromJust $ (a -? b) <|> error "Subtraction underflow"
+
 class AdditiveMonoid a => AdditiveGroup a where
     negate :: a -> a
     (-) :: a -> a -> a
@@ -47,6 +56,13 @@ class MultiplicativeSemigroup a => MultiplicativeMonoid a where
     one :: a
     product :: Foldable f => f a -> a
     product = foldl' (*) one
+
+class MultiplicativeMonoid a => MultiplicativePartialGroup a where
+    (/?) :: a -> a -> Maybe a
+    default (/?) :: EuclideanDomain a => a -> a -> Maybe a
+    a /? b = case quotRem a b of
+        (result, z) | z == zero -> Just result
+        _                       -> Nothing
 
 class MultiplicativeMonoid a => MultiplicativeGroup a where
     inverse :: a -> a
@@ -78,26 +94,16 @@ class (OrderedSemiring a, Ring a) => OrderedRing a
 
 type Num a = OrderedRing a
 
-class Semiring a => PeanoSystem a where
+class (Semiring a, AdditivePartialGroup a) => PeanoSystem a where
     increment :: a -> a
     decrement :: a -> Maybe a
-    (-?) :: a -> a -> Maybe a
-    a -? b = case decrement b of
-        Nothing -> Just a
-        Just p  -> (-? p) =<< decrement a
-    (-!) :: a -> a -> a
-    a -! b = fromJust $ (a -? b) <|> error "Subtraction underflow"
 
-class OrderedSemiring a => EuclideanDomain a where
+class (OrderedSemiring a, MultiplicativePartialGroup a) => EuclideanDomain a where
     quotRem :: a -> a -> (a,a)
     quot :: a -> a -> a
     quot = (fst <$>) . quotRem
     rem :: a -> a -> a
     rem = (snd <$>) . quotRem
-    (/?) :: a -> a -> Maybe a
-    a /? b = case quotRem a b of
-        (result, z) | z == zero -> Just result
-        _                       -> Nothing
 
 type Integral a = EuclideanDomain a
 
@@ -107,11 +113,18 @@ instance AdditiveSemigroup Word where
 instance AdditiveMonoid Word where
     zero = 0
 
+instance AdditivePartialGroup Word where
+    (W# a) -? (W# b) = case subWordC# a b of
+        (# result, 0# #) -> Just $ W# result
+        (# _     , _  #) -> Nothing
+
 instance MultiplicativeSemigroup Word where
     W# a * W# b = W# $ timesWord# a b
 
 instance MultiplicativeMonoid Word where
     one = 1
+
+instance MultiplicativePartialGroup Word
 
 instance Semiring Word where
     fromNatural = naturalToWord
@@ -126,9 +139,6 @@ instance PeanoSystem Word where
         Nothing
             else
         Just $ W# $ minusWord# x 1##
-    (W# a) -? (W# b) = case subWordC# a b of
-        (# result, 0# #) -> Just $ W# result
-        (# _     , _  #) -> Nothing
 
 instance EuclideanDomain Word where
     quotRem (W# x) (W# y) = case quotRemWord# x y of
@@ -149,6 +159,8 @@ instance MultiplicativeSemigroup Int where
 
 instance MultiplicativeMonoid Int where
     one = 1
+
+instance MultiplicativePartialGroup Int
 
 instance Semiring Int where
     fromNatural = integerToInt . naturalToInteger
@@ -205,11 +217,18 @@ instance AdditiveSemigroup Natural where
 instance AdditiveMonoid Natural where
     zero = naturalZero
 
+instance AdditivePartialGroup Natural where
+    x -? y = case naturalSub x y of
+        (# (# #) | #) -> Nothing
+        (# | res #)   -> Just res
+
 instance MultiplicativeSemigroup Natural where
     (*) = naturalMul
 
 instance MultiplicativeMonoid Natural where
     one = naturalOne
+
+instance MultiplicativePartialGroup Natural
 
 instance Semiring Natural where
     fromNatural = id
@@ -219,9 +238,6 @@ instance OrderedSemiring Natural where
 
 instance PeanoSystem Natural where
     increment x = naturalAdd x one
-    x -? y = case naturalSub x y of
-        (# (# #) | #) -> Nothing
-        (# | res #)   -> Just res
     decrement x = x -? one
 
 instance EuclideanDomain Natural where
@@ -242,6 +258,8 @@ instance MultiplicativeSemigroup Integer where
 
 instance MultiplicativeMonoid Integer where
     one = integerOne
+
+instance MultiplicativePartialGroup Integer
 
 instance Semiring Integer where
     fromNatural = naturalToInteger
