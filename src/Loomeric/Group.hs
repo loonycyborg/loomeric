@@ -18,6 +18,8 @@ import Control.Category
 import Data.Maybe
 import Data.Bool
 
+import Loomeric.Conversions
+
 class AdditiveSemigroup a where
     (+) :: a -> a -> a
     sum1 :: Foldable1 f => f a -> a
@@ -65,6 +67,8 @@ class (Semiring a, Ord a) => OrderedSemiring a where
     signum :: a -> a
     abs :: a -> a
     abs x = signum x * x
+    absG :: (SignedType b ~ a, SignTruncate b) => a -> b
+    absG = signTruncate . abs
 
 class (OrderedSemiring a, Ring a) => OrderedRing a
 

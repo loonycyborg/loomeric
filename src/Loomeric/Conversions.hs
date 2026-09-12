@@ -38,6 +38,7 @@ instance SignConvert Natural where
 
 instance SignConvert Int
 instance SignConvert Integer
+instance SignConvert Float
 
 class SignTruncate a where
     signTruncate :: SignedType a -> a
@@ -49,3 +50,5 @@ instance SignTruncate Word where
 
 instance SignTruncate Natural where
     signTruncate = naturalFromInteger
+
+instance SignTruncate Float
