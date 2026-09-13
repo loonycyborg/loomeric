@@ -24,39 +24,95 @@ infixr 8 **
 infixl 7 *, /, /?, `quot`, `rem`
 infixl 6 +, -, -?, -!
 
+{- | === A semigroup under addition
+
+   An alebraic system that has operation '+' called "addition" which satisfies
+   the associativity axiom:
+
+   * @(a + b) + c = a + (b + c)@
+-}
 class AdditiveSemigroup a where
     (+) :: a -> a -> a
     sum1 :: Foldable1 f => f a -> a
     sum1 = foldl1' (+)
 
+{- | === A monoid under addition
+
+    An additive semigroup that also has an element called 'zero' which satisfies:
+
+    * @a + zero = zero@
+    * @zero + a = zero@
+-}
 class AdditiveSemigroup a => AdditiveMonoid a where
     zero :: a
     sum :: Foldable f => f a -> a
     sum = foldl' (+) zero
 
+{- | === A partial group under addition
+
+    An additive monoid that has subtraction operation that it is only actually defined for
+    /some/ pairs of elements. Partial subtraction '-?' returns 'Nothing' for elements which can't be
+    subtracted. It should satisfy:
+
+    * @a -? a = Just zero@
+    * If @a -? b = Just c@ then @a = c + b@
+-}
 class AdditiveMonoid a => AdditivePartialGroup a where
     (-?) :: a -> a -> Maybe a
     default (-?) :: PeanoSystem a => a -> a -> Maybe a
     a -? b = case decrement b of
         Nothing -> Just a
         Just p  -> (-? p) =<< decrement a
+    -- | Calls 'error' for elements that can't be subtracted instead
     (-!) :: a -> a -> a
     a -! b = fromJust $ (a -? b) <|> error "Subtraction underflow"
 
+{- | === A group under addition
+
+    An additive monoid that for each element @a@ has has element @negate a@ which satisfies:
+
+    * @a + negate a = zero@
+
+    and a subtraction operation '-' which satisfies:
+
+    * @a - b = a + negate b@
+-}
 class AdditiveMonoid a => AdditiveGroup a where
     negate :: a -> a
     (-) :: a -> a -> a
 
+{- | === A semigroup under multiplication
+
+    An algebraic system that has multiply operation '*' that satisfies:
+
+    * @(a * b) * c = a * (b * c)@ (Associativity)
+-}
 class MultiplicativeSemigroup a where
     (*) :: a -> a -> a
     product1 :: Foldable1 f => f a -> a
     product1 = foldl1' (*)
 
+{- | === A monoid under multiplication
+
+    A multiplicative semigroup that has element called 'one' that satisfies:
+
+    * @one * a = one@
+    * @a * one = one@
+-}
 class MultiplicativeSemigroup a => MultiplicativeMonoid a where
     one :: a
     product :: Foldable f => f a -> a
     product = foldl' (*) one
 
+{- | === A partial group under multiplication
+
+    A multiplicative monoid that has partial division operation '/?' that satisfies:
+
+    * @a /? a = Just one@
+    * if @a /? b = Just c@ then @a = c * b@
+
+    '/?' returns 'Nothing' for elements for which division isn't defined
+-}
 class MultiplicativeMonoid a => MultiplicativePartialGroup a where
     (/?) :: a -> a -> Maybe a
     default (/?) :: EuclideanDomain a => a -> a -> Maybe a
@@ -64,20 +120,53 @@ class MultiplicativeMonoid a => MultiplicativePartialGroup a where
         (result, z) | z == zero -> Just result
         _                       -> Nothing
 
+{- | === A group under multiplication
+
+    A multiplicative monoid that for each element @a@ has has element @inverse a@ which satisfies:
+
+    * @a * inverse a = one@
+
+    and a division operation '/' which satisfies:
+
+    * @a / b = a * inverse b@
+-}
 class MultiplicativeMonoid a => MultiplicativeGroup a where
     inverse :: a -> a
     (/) :: a -> a -> a
 
 type Fractional a = MultiplicativeGroup a
 
+{- | === An algebraic semiring
+
+    An algebraic structure that is both monoid under addition and monoid under multiplication.
+    It also should satisfy:
+
+    * @zero * a = zero@ (Left-annihilation)
+    * @a * zero = zero@ (Right-annihilation)
+    * @a * (b + c) = a * c + b * c@ (Left distributivity)
+    * @(b + c) * a = b * a + c * a@ (Right distributivity)
+
+    Each semiring will have an unique homomorphism from natural numbers which is represented by
+    'fromNatural' method
+-}
 class (AdditiveMonoid a, MultiplicativeMonoid a) => Semiring a where
     linearCombination :: Foldable f => f (a, a) -> a
     linearCombination = sum . concatMap ((:[]) . uncurry (*))
     fromNatural :: Natural -> a
 
+{- | === An algebraic ring
+
+    A 'Semiring' that is also a group under addition. For each ring there is an unique homomorphism
+    from integer which is represented by 'fromInteger' method.
+-}
 class (AdditiveGroup a, Semiring a) => Ring a where
     fromInteger :: Integer -> a
 
+{- | === An algebraic field
+
+    A 'Ring' that is group both under addition and multiplication allowing for the full suite of
+    basic algebraic operations.
+-}
 class (MultiplicativeGroup a, Ring a) => Field a where
     (**) :: a -> a -> a
     exp :: a -> a
