@@ -1,14 +1,17 @@
 {-# OPTIONS_GHC -fplugin GHC.TypeLits.Normalise #-}
 {-# OPTIONS_GHC -fplugin-opt GHC.TypeLits.Normalise:allow-negated-numbers #-}
+{-# OPTIONS_GHC -fplugin GHC.TypeLits.KnownNat.Solver #-}
 {-# LANGUAGE DataKinds, GADTs, TypeFamilyDependencies, NoStarIsType, TypeAbstractions, UndecidableInstances #-}
 module Loomeric.Peano where
-import Prelude (error, ($), Int, Integer, Show(..), Eq(..), Bool(..), otherwise, Enum(..), (||), Ordering (EQ, LT, GT), Semigroup(..))
+import Prelude (error, ($), Int, Integer, Show(..), Eq(..), Bool(..), Either(..), otherwise, Enum(..), (||), Ordering (EQ, LT, GT), Semigroup(..))
 import Data.Kind
 import Data.Maybe
 import GHC.TypeNats
 import Data.Type.Bool
 import Data.Singletons.Bool
 import Data.Type.Equality
+import GHC.TypeLits
+import Data.Type.Ord
 import Control.Category
 
 import Loomeric.Group
@@ -20,7 +23,7 @@ data Peano :: Nat -> Type where
 
 deriving instance Show (Peano n)
 
-data SomePeano = forall n . SomePeano (Peano n)
+data SomePeano = forall n . KnownNat n => SomePeano (Peano n)
 
 deriving instance Show SomePeano
 instance Eq SomePeano where
@@ -41,11 +44,6 @@ subP :: b <= a => Peano a -> Peano b -> Peano (a - b)
 subP Zero     Zero     = Zero
 subP (Succ x) Zero     = Succ x
 subP (Succ x) (Succ y) = subP x y
-
-subSP :: forall p a b . (SBoolI p, p ~ (b <=? a), If p (b <= a) (a + 1 <= b)) => Peano a -> Peano b -> SPeano (If p PPlus PMinus) (If p (a - b) (b - a))
-subSP x y = case sbool @p of
-    STrue  -> SPositive $ subP x y
-    SFalse -> SNegative $ subP y x
 
 mulP :: Peano a -> Peano b -> Peano (a * b)
 mulP x Zero = Zero
@@ -103,57 +101,98 @@ peanoAbs (SNegative x) = x
 deriving instance Show (SPeano s n)
 
 data SomeSPeano where
-    SomeSPeano :: (SBoolI sign, sign ~ PSign2Bool s, KnownNat n) => SPeano s n -> SomeSPeano
+    SomeSPeano :: (KnownNat n) => SPeano s n -> SomeSPeano
 
 deriving instance Show SomeSPeano
 
-type family SubAbsCmp o a b where
-    SubAbsCmp 'EQ a b = 0
-    SubAbsCmp 'GT a b = a - b
-    SubAbsCmp 'LT a b = b - a
+type family InvertS s = r | r -> s where
+    InvertS PPlus  = PMinus
+    InvertS PMinus = PPlus
 
-type SubAbs a b = SubAbsCmp (CmpNat a b) a b
+type family AddSign ord s1 s2 where
+    AddSign EQ _      _      = PPlus
+    AddSign GT s      s      = s
+    AddSign GT PPlus  PMinus = PPlus
+    AddSign GT PMinus PPlus  = PMinus
+    AddSign LT s1     s2     = AddSign GT s2 s1
 
-type family SubSignCmp o a b where
-    SubSignCmp 'EQ a b = PPlus
-    SubSignCmp 'GT a b = PPlus
-    SubSignCmp 'LT a b = PMinus
+type family AddAbs ord s1 a s2 b where
+    AddAbs EQ s  a s  a = a + a
+    AddAbs EQ _  _ _  _ = 0
+    AddAbs _  s  a s  b = a + b
+    AddAbs GT _  a _  b = a - b
+    AddAbs LT _  a _  b = b - a
 
-type SubSign a b = SubSignCmp (CmpNat a b) a b
-
-type family InvertedS x where
-    InvertedS PPlus  = PMinus
-    InvertedS PMinus = PPlus
-
-type family CombineS x y where
-    CombineS PPlus  PPlus  = PPlus
-    CombineS PMinus PMinus = PPlus
-    CombineS _      _      = PMinus
-
-type family AddSign diffsign is_zero s1 a s2 b where
-    AddSign _        True    _ _ _      _ = PPlus
-    AddSign diffsign _ PPlus   a PPlus  b = PPlus
-    AddSign diffsign _ PPlus   a PMinus b = If diffsign PPlus PMinus
-    AddSign diffsign _ PMinus  a s2     b = InvertedS (AddSign diffsign False PPlus a (InvertedS s2) b)
-
-type family AddAbs diffsign s1 a s2 b where
-    AddAbs diffsign s a s b = a + b
-    AddAbs diffsign _ a _ b = If diffsign (a - b) (b - a)
-
-addSP :: forall abs_diff_positive is_zero s1 a s2 b s3 c . (
-    c ~ AddAbs abs_diff_positive s1 a s2 b,
-    s3 ~ AddSign abs_diff_positive is_zero s1 a s2 b,
-    abs_diff_positive ~ (b <=? a), SBoolI abs_diff_positive,
-    is_zero ~ (Not (s1 == s2) && (a == b)), SBoolI is_zero,
-    If is_zero (a ~ b) (1 <= c) 
+addSP :: forall ord s1 a s2 b s3 c . (
+    c ~ AddAbs ord s1 a s2 b,
+    s3 ~ AddSign ord s1 s2,
+    ord ~ Compare a b,
+    KnownNat a, KnownNat b
     ) => SPeano s1 a -> SPeano s2 b -> SPeano s3 c
-addSP (SPositive x) (SPositive y) = SPositive $ addP x y
-addSP (SPositive x) (SNegative y) = case (sbool @abs_diff_positive, sbool @is_zero) of
-    (STrue, SFalse)  -> SPositive $ subP x y
-    (SFalse, SFalse) -> SNegative $ subP y x
-    (STrue, STrue)   -> SPositive Zero
-addSP (SNegative x) (SNegative y) = SNegative $ addP x y
-addSP (SNegative x) (SPositive y) = case (sbool @abs_diff_positive, sbool @is_zero) of
-    (STrue, SFalse)  -> SNegative $ subP x y
-    (SFalse, SFalse) -> SPositive $ subP y x
-    (STrue, STrue)   -> SPositive Zero
+addSP x y = case (cmpNat (natSing @a) (natSing @b), x, y) of
+    (EQI, SPositive x,        SPositive y)        -> SPositive $ addP x y
+    (EQI, SPositive x,        SNegative y)        -> SPositive Zero
+    (EQI, SNegative x,        SPositive y)        -> SPositive Zero
+    (EQI, SNegative x,        SNegative y)        -> SPositive $ addP x y
+    (GTI, SPositive x,        SPositive y)        -> SPositive $ addP x y
+    (GTI, SPositive x,        SNegative y)        -> SPositive $ subP x y
+    (GTI, SNegative (Succ x), SPositive y)        -> SNegative $ subP (Succ x) y
+    (GTI, SNegative x,        SNegative y)        -> SNegative $ addP x y
+    (LTI, SPositive x,        SPositive y)        -> SPositive $ addP x y
+    (LTI, SPositive x,        SNegative (Succ y)) -> SNegative $ subP (Succ y) x
+    (LTI, SNegative x,        SPositive y)        -> SPositive $ subP y x
+    (LTI, SNegative x,        SNegative y)        -> SNegative $ addP x y
+
+type family MulSign s1 a s2 b where
+    MulSign s _ s _ = PPlus
+    MulSign _ _ _ _ = PMinus
+
+mulSPNZ :: (Compare a 0 ~ GT, Compare b 0 ~ GT) => SPeano s1 a -> SPeano s2 b -> SPeano (MulSign s1 a s2 b) (a * b)
+mulSPNZ (SPositive x)        (SPositive y)        = SPositive $ mulP x y
+mulSPNZ (SPositive (Succ x)) (SNegative (Succ y)) = SNegative $ mulP (Succ x) (Succ y)
+mulSPNZ (SNegative (Succ x)) (SPositive (Succ y)) = SNegative $ mulP (Succ x) (Succ y)
+mulSPNZ (SNegative x)        (SNegative y)        = SPositive $ mulP x y
+
+mulSP :: (KnownNat a, KnownNat b) => SPeano s1 a -> SPeano s2 b -> SPeano (If (Compare a 0 == EQ || Compare b 0 == EQ) PPlus (MulSign s1 a s2 b)) (a * b)
+mulSP (SPositive Zero) b = SPositive Zero
+mulSP a (SPositive Zero) = SPositive Zero
+mulSP @a @b a b = case (cmpNat (natSing @a) (natSing @0), cmpNat (natSing @b) (natSing @0)) of
+    (GTI, GTI) -> mulSPNZ a b
+
+instance AdditiveSemigroup SomeSPeano where
+    SomeSPeano (x :: SPeano s1 a) + SomeSPeano (y :: SPeano s2 b) = case (x, y, cmpNat (natSing @a) (natSing @b)) of
+        (SPositive a, SPositive b, GTI) -> SomeSPeano $ addSP x y
+        (SPositive a, SPositive b, LTI) -> SomeSPeano $ addSP x y
+        (SPositive a, SPositive b, EQI) -> SomeSPeano $ addSP x y
+        --(SPositive a, SNegative b, GTI) -> SomeSPeano $ addSP x y
+        (SPositive a, SNegative b, EQI) -> SomeSPeano $ addSP x y
+        (SPositive a, SNegative b, LTI) -> SomeSPeano $ addSP x y
+        --(SNegative a, SPositive b, GTI) -> SomeSPeano $ addSP x y
+        (SNegative a, SPositive b, EQI) -> SomeSPeano $ addSP x y
+        (SNegative a, SPositive b, LTI) -> SomeSPeano $ addSP x y
+        (SNegative a, SNegative b, GTI) -> SomeSPeano $ addSP x y
+        (SNegative a, SNegative b, EQI) -> SomeSPeano $ addSP x y
+        (SNegative a, SNegative b, LTI) -> SomeSPeano $ addSP x y
+
+instance AdditiveMonoid SomeSPeano where
+    zero = SomeSPeano $ SPositive Zero
+
+instance AdditiveGroup SomeSPeano where
+    negate (SomeSPeano x) = SomeSPeano $ mulSP (SNegative $ Succ Zero) x
+    x - y = x + negate y
+
+instance MultiplicativeSemigroup SomeSPeano where
+    SomeSPeano x * SomeSPeano y = SomeSPeano $ mulSP x y
+
+instance MultiplicativeMonoid SomeSPeano where
+    one = SomeSPeano $ SPositive $ Succ Zero
+
+instance Semiring SomeSPeano where
+    fromNatural n = case fromNatural n of
+        SomePeano x -> SomeSPeano $ SPositive x
+
+instance Ring SomeSPeano where
+    fromInteger n = case (signum n, fromNatural $ signTruncate $ abs n) of
+        (0, _) -> SomeSPeano $ SPositive Zero
+        (1, SomePeano x) -> SomeSPeano $ SPositive x
+        (-1, SomePeano (Succ x)) -> SomeSPeano $ SNegative (Succ x)
