@@ -9,6 +9,7 @@ import GHC.Num.Primitives (absI#, sgnI#)
 import Data.List.NonEmpty as NE
 import GHC.Num.Natural
 import GHC.Num.Integer
+import GHC.Num.BigNat
 import GHC.Float ( integerToFloat#, naturalToFloat# )
 import GHC.Natural ( naturalToInteger )
 import Prelude (($), fst, snd, not, uncurry, Eq(..), error)
@@ -205,6 +206,14 @@ class (OrderedSemiring a, MultiplicativePartialGroup a) => EuclideanDomain a whe
     quot = (fst <$>) . quotRem
     rem :: a -> a -> a
     rem = (snd <$>) . quotRem
+    gcd :: a -> a -> a
+    gcd x y = gcdAbs (abs x) (abs y) where
+        gcdAbs a b | b == zero = a
+                   | otherwise = gcdAbs b (a `rem` b)
+    lcm :: a -> a -> a
+    lcm x y | y == zero = zero
+            | x == zero = zero
+            | otherwise = abs ((x `quot` gcd x y) * y)
 
 type Integral a = EuclideanDomain a
 
@@ -244,6 +253,7 @@ instance PeanoSystem Word where
 instance EuclideanDomain Word where
     quotRem (W# x) (W# y) = case quotRemWord# x y of
         (# r, c #) -> (W# r, W# c)
+    gcd (W# x) (W# y) = W# $ gcdWord# x y
 
 instance AdditiveSemigroup Int where
     I# a + I# b = I# (a +# b)
@@ -275,6 +285,7 @@ instance OrderedRing Int
 instance EuclideanDomain Int where
     quotRem (I# a) (I# b) = case quotRemInt# a b of
         (# x, y #) -> (I# x, I# y)
+    gcd (I# x) (I# y) = I# $ gcdInt# x y
 
 instance AdditiveSemigroup Float where
     F# a + F# b = F# $ plusFloat# a b
@@ -343,6 +354,8 @@ instance PeanoSystem Natural where
 
 instance EuclideanDomain Natural where
     quotRem = naturalQuotRem
+    gcd = naturalGcd
+    lcm = naturalLcm
 
 instance AdditiveSemigroup Integer where
     (+) = integerAdd
@@ -375,6 +388,8 @@ instance OrderedRing Integer
 
 instance EuclideanDomain Integer where
     quotRem = integerQuotRem
+    gcd = integerGcd
+    lcm = integerLcm
 
 subtract :: AdditiveGroup a => a -> a -> a
 subtract x y = y - x
