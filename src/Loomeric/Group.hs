@@ -183,10 +183,22 @@ class (OrderedSemiring a, Ring a) => OrderedRing a
 
 type Num a = OrderedRing a
 
+{- | === A Peano-like set
+
+    A set with zero element and operation that takes an element and returns the next one.
+    Only types where /all/ elements can be built from 'zero' by chain of increments
+    should implement this typeclass.
+-}
 class (Semiring a, AdditivePartialGroup a) => PeanoSystem a where
     increment :: a -> a
     decrement :: a -> Maybe a
 
+{- | === Euclidean Domain
+
+    An ordered 'Semiring' or 'Ring' of integers or similar objects that have partial
+    division defined as well as GCD and LCM. 'Fields' and other structures that are
+    closed under division (except by zero) should not define this typeclass.
+-}
 class (OrderedSemiring a, MultiplicativePartialGroup a) => EuclideanDomain a where
     quotRem :: a -> a -> (a,a)
     quot :: a -> a -> a
