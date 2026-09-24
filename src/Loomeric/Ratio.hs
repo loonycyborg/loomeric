@@ -1,5 +1,7 @@
 module Loomeric.Ratio ((%), numerator, denominator, Ratio, Rational) where
 import Loomeric.Group
+import Loomeric.Integer
+import Loomeric.Ring
 
 import Prelude (($), (.), (>), undefined, Show(..), Eq(..), showParen, showString, Integer)
 

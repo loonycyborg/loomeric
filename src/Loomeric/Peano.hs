@@ -16,6 +16,8 @@ import Control.Category
 
 import Loomeric.Group
 import Loomeric.Conversions
+import Loomeric.Ring
+import Loomeric.Integer
 
 data Peano :: Nat -> Type where
     Zero :: Peano 0

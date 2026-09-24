@@ -14,5 +14,5 @@ common common-options
 library
     import: common-options
     hs-source-dirs: src
-    exposed-modules: LoomericPrelude Loomeric.Group Loomeric.Conversions Loomeric.Peano Loomeric.Ratio
+    exposed-modules: LoomericPrelude Loomeric.Group Loomeric.Ring Loomeric.Conversions Loomeric.Peano Loomeric.Ratio Loomeric.Integer Loomeric.Field
     build-depends: base, ghc-bignum, ghc-typelits-natnormalise, ghc-typelits-knownnat, singleton-bool
