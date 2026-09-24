@@ -33,6 +33,21 @@ class Field a => ExponentialField a where
     exp :: a -> a
     log :: a -> a
 
+class Field a => TrigonometricField a where
+    pi :: a
+    sin :: a -> a
+    cos :: a -> a
+    tan :: a -> a
+    asin :: a -> a
+    acos :: a -> a
+    atan :: a -> a
+    sinh :: a -> a
+    cosh :: a -> a
+    tanh :: a -> a
+    asinh :: a -> a
+    acosh :: a -> a
+    atanh :: a -> a
+
 instance Field Float where
     fromRational x = rationalToFloat (numerator x) (denominator x)
 
@@ -40,3 +55,18 @@ instance ExponentialField Float where
     (F# a) ** (F# b) = F# $ powerFloat# a b
     exp (F# x) = F# $ expFloat# x
     log (F# x) = F# $ logFloat# x
+
+instance TrigonometricField Float where
+    pi = 3.141592653589793238
+    sin (F# x) = F# $ sinFloat# x
+    cos (F# x) = F# $ cosFloat# x
+    tan (F# x) = F# $ tanFloat# x
+    asin (F# x) = F# $ asinFloat# x
+    acos (F# x) = F# $ acosFloat# x
+    atan (F# x) = F# $ atanFloat# x
+    sinh (F# x) = F# $ sinhFloat# x
+    cosh (F# x) = F# $ coshFloat# x
+    tanh (F# x) = F# $ tanhFloat# x
+    asinh (F# x) = F# $ asinhFloat# x
+    acosh (F# x) = F# $ acoshFloat# x
+    atanh (F# x) = F# $ atanhFloat# x
