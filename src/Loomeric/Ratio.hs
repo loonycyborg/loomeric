@@ -1,4 +1,8 @@
+{-# LANGUAGE TypeFamilies #-}
 module Loomeric.Ratio ((%), numerator, denominator, Ratio, Rational) where
+import Control.Applicative
+import Data.MonoTraversable
+
 import Loomeric.Group
 import Loomeric.Integer
 import Loomeric.Ring
@@ -15,6 +19,15 @@ instance Ord (Ratio a) where
     compare (x :% x') (y :% y') = compare (x * y') (y * x')
 
 type Rational = Ratio Integer
+
+type instance Element (Ratio a) = a
+
+instance MonoFunctor (Ratio a) where
+    omap f (x :% x') = normalize $ f x :% f x'
+
+instance MonoFoldable (Ratio a)
+instance MonoTraversable (Ratio a) where
+    otraverse f (x :% x') = normalize <$> liftA2 (:%) (f x) (f x')
 
 (%) :: EuclideanDomain a => a -> a -> Ratio a
 x % y = normalize $ x :% y
