@@ -3,12 +3,16 @@ import Loomeric.Group
 import Loomeric.Integer
 import Loomeric.Ring
 
-import Prelude (($), (.), (>), undefined, Show(..), Eq(..), showParen, showString, Integer)
+import Prelude (($), (.), (>), undefined, Show(..), Eq(..), Ord(..), Foldable(..), showParen, showString, Integer)
 
 data Ratio a where
     (:%) :: EuclideanDomain a => a -> a -> Ratio a
 
 deriving instance Eq (Ratio a)
+deriving instance Foldable Ratio
+
+instance Ord (Ratio a) where
+    compare (x :% x') (y :% y') = compare (x * y') (y * x')
 
 type Rational = Ratio Integer
 
