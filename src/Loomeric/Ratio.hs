@@ -6,6 +6,7 @@ import Data.MonoTraversable
 import Loomeric.Group
 import Loomeric.Integer
 import Loomeric.Ring
+import Loomeric.Module
 
 import Prelude (($), (.), (>), undefined, Show(..), Eq(..), Ord(..), Foldable(..), showParen, showString, Integer)
 
@@ -69,6 +70,12 @@ instance EuclideanDomain a => Semiring (Ratio a) where
 
 instance (EuclideanDomain a, Ring a) => Ring (Ratio a) where
     fromInteger n = fromInteger n :% one
+
+instance EuclideanDomain a => SemiModule a (Ratio a) where
+    scale *^ (x :% x') = normalize $ (scale * x) :% x'
+    (x :% x') ^* scale = normalize $ (x * scale) :% x'
+
+instance (EuclideanDomain a, Ring a) => Module a (Ratio a)
 
 instance  (Show a)  => Show (Ratio a)  where
     showsPrec p (x:%y)  =  showParen (p > 7) $

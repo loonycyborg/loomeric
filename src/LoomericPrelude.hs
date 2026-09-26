@@ -8,6 +8,7 @@ import Loomeric.Field
 import Loomeric.Conversions
 import Loomeric.Integer
 import Loomeric.Ratio
+import Loomeric.Module
 
 default AdditiveSemigroup (Int, Float)
 default MultiplicativeSemigroup (Int, Float)
