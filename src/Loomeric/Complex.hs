@@ -41,10 +41,10 @@ instance Ring a => MultiplicativeSemigroup (Complex a) where
 instance Ring a => MultiplicativeMonoid (Complex a) where
     one = one :+ zero
 
-instance ExponentialField a => MultiplicativeGroup (Complex a) where
+instance Field a => MultiplicativeGroup (Complex a) where
     (x :+ x') / b@(y :+ y') = linearCombination [ (x, y), (x', y') ] / d :+ linearCombination [ (x', y), (negate x, y') ] / d where
         d = linearCombination [ (y, y), (y', y') ]
-    inverse x = conjugate x ^* (inverse $ norm x :: a)
+    inverse a@(x :+ x') = omap (/(x * x + x' * x')) $ conjugate a
 
 instance Ring a => Semiring (Complex a) where
     fromNatural n = fromNatural n :+ zero
