@@ -1,7 +1,7 @@
 {-# LANGUAGE MagicHash #-}
 module Loomeric.Field where
 
-import GHC.Float
+import GHC.Float as F
 import GHC.Exts
 
 import Prelude (($))
@@ -41,6 +41,7 @@ class Field a => TrigonometricField a where
     asin :: a -> a
     acos :: a -> a
     atan :: a -> a
+    atan2 :: a -> a -> a
     sinh :: a -> a
     cosh :: a -> a
     tanh :: a -> a
@@ -64,6 +65,7 @@ instance TrigonometricField Float where
     asin (F# x) = F# $ asinFloat# x
     acos (F# x) = F# $ acosFloat# x
     atan (F# x) = F# $ atanFloat# x
+    atan2 = F.atan2
     sinh (F# x) = F# $ sinhFloat# x
     cosh (F# x) = F# $ coshFloat# x
     tanh (F# x) = F# $ tanhFloat# x
