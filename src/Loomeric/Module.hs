@@ -15,3 +15,13 @@ class (Semiring s, AdditiveMonoid a) => SemiModule s a where
     x ^* scale = omap (* scale) x
 
 class (Ring s, AdditiveGroup a, SemiModule s a) => Module s a
+
+instance Semiring a => SemiModule a a where
+    (*^) = (*)
+    (^*) = (*)
+
+class SemiModule s a => Normed s a where
+    norm :: a -> s
+
+instance OrderedSemiring a => Normed a a where
+    norm = abs
