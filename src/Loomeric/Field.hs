@@ -29,6 +29,7 @@ type Fractional a = Field a
     like roots of negative numbers.
 -}
 class Field a => ExponentialField a where
+    sqrt :: a -> a
     (**) :: a -> a -> a
     exp :: a -> a
     log :: a -> a
@@ -53,6 +54,7 @@ instance Field Float where
     fromRational x = rationalToFloat (numerator x) (denominator x)
 
 instance ExponentialField Float where
+    sqrt (F# x) = F# $ sqrtFloat# x
     (F# a) ** (F# b) = F# $ powerFloat# a b
     exp (F# x) = F# $ expFloat# x
     log (F# x) = F# $ logFloat# x
