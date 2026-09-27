@@ -1,7 +1,10 @@
-{-# LANGUAGE DefaultSignatures #-}
+{-# LANGUAGE DefaultSignatures, MagicHash #-}
 module Loomeric.Module where
 import Data.MonoTraversable
 import Data.Type.Equality
+import GHC.Exts
+
+import Prelude (($))
 
 import Loomeric.Group
 import Loomeric.Ring
@@ -25,3 +28,9 @@ class SemiModule s a => Normed s a where
 
 instance OrderedSemiring a => Normed a a where
     norm = abs
+
+instance SemiModule Int Float where
+    (I# x) *^ (F# y) = F# $ timesFloat# (int2Float# x) y
+    (F# x) ^* (I# y) = F# $ timesFloat# x (int2Float# y)
+
+instance Module Int Float
