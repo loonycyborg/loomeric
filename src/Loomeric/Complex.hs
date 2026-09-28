@@ -55,6 +55,9 @@ instance Ring a => Semiring (Complex a) where
 instance Ring a => Ring (Complex a) where
     fromInteger n = fromInteger n :+ zero
 
+instance Ring a => InvolutionRing (Complex a) where
+    conjugate (x :+ x') = x :+ negate x'
+
 instance ExponentialField a => Field (Complex a) where
     fromRational n = fromRational n :+ zero
 
@@ -97,6 +100,3 @@ phase :: (Eq a, TrigonometricField a) => Complex a -> a
 phase a@(x :+ x')
         | a == zero = zero
         | otherwise = atan2 x' x
-
-conjugate :: AdditiveGroup a => Complex a -> Complex a
-conjugate (x :+ x') = x :+ negate x'

@@ -50,6 +50,9 @@ class (OrderedSemiring a, Ring a) => OrderedRing a
 
 type Num a = OrderedRing a
 
+class Semiring a => InvolutionRing a where
+    conjugate :: a -> a
+
 instance Semiring Word where
     fromNatural = naturalToWord
 
