@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies, DataKinds #-}
+{-# LANGUAGE TypeFamilies, DataKinds, OverloadedRecordDot #-}
 module Loomeric.Complex where
 
 import Data.MonoTraversable
@@ -62,11 +62,11 @@ instance ExponentialField a => Field (Complex a) where
     fromRational n = fromRational n :+ zero
 
 instance (ExponentialField a, Eq a, Ord a, TrigonometricField a) => ExponentialField (Complex a) where
-    sqrt a@(x :+ x') = s1 * sqrt ((norm a + x)/(one + one)) :+ s2 * sqrt ((norm a - x)/(one + one)) where
+    sqrt a@(x :+ x') = s1 * sqrt ((a.r + x)/(one + one)) :+ s2 * sqrt ((a.r - x)/(one + one)) where
         s1 = one
         s2 = if x' >= zero then one else negate one
     exp a@(x :+ x') = exp x *^ (cos x' :+ sin x')
-    log x = log (norm x) :+ phase x
+    log x = log x.r :+ x.theta
     x ** y = exp $ y * log x
 
 instance Semiring a => SemiModule a (Complex a)
@@ -86,6 +86,12 @@ instance Ring a => HasCoordinate "imag" a (Complex a) where
 
 instance (Ring a, HasCoordinate s a (Complex a)) => HasField (s :: Symbol) (Complex a) a where
     getField = coord @s
+
+instance {-# OVERLAPPING #-} ExponentialField a => HasField "r" (Complex a) a where
+    getField = norm
+
+instance {-# OVERLAPPING #-} (Eq a, TrigonometricField a) => HasField "theta" (Complex a) a where
+    getField = phase
 
 realPart :: Complex a -> a
 realPart (x :+ _) = x
