@@ -1,5 +1,5 @@
 {-# LANGUAGE MagicHash, UnboxedTuples, DefaultSignatures #-}
-module Loomeric.Integer where
+module Loomeric.Data.Integer where
 
 import Data.Maybe
 import Control.Applicative
@@ -12,8 +12,8 @@ import GHC.Exts
 
 import Prelude (fst, snd, not, (==), ($), otherwise, error, Ord(..))
 
-import Loomeric.Group
-import Loomeric.Ring
+import Loomeric.Algebra.Group
+import Loomeric.Algebra.Ring
 
 infixl 7 `quot`, `rem`, /?
 infixl 6 -?

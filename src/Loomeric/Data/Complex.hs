@@ -1,15 +1,15 @@
 {-# LANGUAGE TypeFamilies, DataKinds, OverloadedRecordDot #-}
-module Loomeric.Complex where
+module Loomeric.Data.Complex where
 
 import Data.MonoTraversable
 import GHC.Records
 import GHC.TypeLits
 
-import Loomeric.Group
-import Loomeric.Ring
-import Loomeric.Field
-import Loomeric.Module
-import Loomeric.VectorSpace
+import Loomeric.Algebra.Group
+import Loomeric.Algebra.Ring
+import Loomeric.Algebra.Field
+import Loomeric.Algebra.Module
+import Loomeric.Algebra.VectorSpace
 
 import Prelude (($), (.), otherwise, Eq(..), Ord(..), Show(..), Read(..), Foldable(..))
 

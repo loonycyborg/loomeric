@@ -1,14 +1,14 @@
 {-# LANGUAGE MagicHash #-}
-module Loomeric.Field where
+module Loomeric.Algebra.Field where
 
 import GHC.Float as F
 import GHC.Exts
 
 import Prelude (($))
 
-import Loomeric.Group
-import Loomeric.Ring
-import Loomeric.Ratio
+import Loomeric.Algebra.Group
+import Loomeric.Algebra.Ring
+import Loomeric.Data.Ratio
 
 infixr 8 **
 

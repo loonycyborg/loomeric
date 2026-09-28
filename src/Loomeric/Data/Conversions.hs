@@ -1,5 +1,5 @@
 {-# LANGUAGE TypeFamilies, MagicHash, DefaultSignatures #-}
-module Loomeric.Conversions where
+module Loomeric.Data.Conversions where
 import Prelude (($), id, Int, Word)
 import GHC.Num.Integer
 import GHC.Num.Natural

@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -fplugin-opt GHC.TypeLits.Normalise:allow-negated-numbers #-}
 {-# OPTIONS_GHC -fplugin GHC.TypeLits.KnownNat.Solver #-}
 {-# LANGUAGE DataKinds, GADTs, TypeFamilyDependencies, NoStarIsType, TypeAbstractions, UndecidableInstances #-}
-module Loomeric.Peano where
+module Loomeric.Data.Peano where
 import Prelude (error, ($), Int, Integer, Show(..), Eq(..), Bool(..), Either(..), otherwise, Enum(..), (||), Ordering (EQ, LT, GT), Semigroup(..))
 import Data.Kind
 import Data.Maybe
@@ -14,10 +14,10 @@ import GHC.TypeLits
 import Data.Type.Ord
 import Control.Category
 
-import Loomeric.Group
-import Loomeric.Conversions
-import Loomeric.Ring
-import Loomeric.Integer
+import Loomeric.Algebra.Group
+import Loomeric.Data.Conversions
+import Loomeric.Algebra.Ring
+import Loomeric.Data.Integer
 
 data Peano :: Nat -> Type where
     Zero :: Peano 0

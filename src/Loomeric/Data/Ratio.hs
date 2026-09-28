@@ -1,12 +1,12 @@
 {-# LANGUAGE TypeFamilies #-}
-module Loomeric.Ratio ((%), numerator, denominator, Ratio, Rational) where
+module Loomeric.Data.Ratio ((%), numerator, denominator, Ratio, Rational) where
 import Control.Applicative
 import Data.MonoTraversable
 
-import Loomeric.Group
-import Loomeric.Integer
-import Loomeric.Ring
-import Loomeric.Module
+import Loomeric.Algebra.Group
+import Loomeric.Data.Integer
+import Loomeric.Algebra.Ring
+import Loomeric.Algebra.Module
 
 import Prelude (($), (.), (>), undefined, Show(..), Eq(..), Ord(..), Foldable(..), showParen, showString, Integer)
 

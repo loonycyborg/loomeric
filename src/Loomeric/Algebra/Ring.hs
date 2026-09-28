@@ -1,5 +1,5 @@
 {-# LANGUAGE MagicHash #-}
-module Loomeric.Ring where
+module Loomeric.Algebra.Ring where
 
 import Data.Bool
 import GHC.Num.Natural
@@ -10,8 +10,8 @@ import GHC.Exts
 import GHC.Num.Primitives (absI#, sgnI#)
 import Prelude (($), (.), (==), id, uncurry, concatMap, Foldable (), Ord(..))
 
-import Loomeric.Group
-import Loomeric.Conversions
+import Loomeric.Algebra.Group
+import Loomeric.Data.Conversions
 
 {- | === An algebraic semiring
 

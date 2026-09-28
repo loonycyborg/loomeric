@@ -1,5 +1,5 @@
 {-# LANGUAGE MagicHash #-}
-module Loomeric.Group where
+module Loomeric.Algebra.Group where
 
 import Data.Foldable1
 import Data.Foldable hiding (sum)

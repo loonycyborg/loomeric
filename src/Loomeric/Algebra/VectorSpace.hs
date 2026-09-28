@@ -1,11 +1,11 @@
 {-# LANGUAGE DataKinds, TypeFamilies, FunctionalDependencies, AllowAmbiguousTypes, UndecidableInstances, UndecidableSuperClasses #-}
-module Loomeric.VectorSpace where
+module Loomeric.Algebra.VectorSpace where
 
 import GHC.TypeLits
 import Data.Kind
 
-import Loomeric.Module
-import Loomeric.Group
+import Loomeric.Algebra.Module
+import Loomeric.Algebra.Group
 
 class (Module s a, AdditiveGroup a, Coords coords s a, 1 <= Dimension coords) => VectorSpace (coords :: [Symbol]) s a
 

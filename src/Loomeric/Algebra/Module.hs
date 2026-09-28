@@ -1,13 +1,13 @@
 {-# LANGUAGE DefaultSignatures, MagicHash #-}
-module Loomeric.Module where
+module Loomeric.Algebra.Module where
 import Data.MonoTraversable
 import Data.Type.Equality
 import GHC.Exts
 
 import Prelude (($))
 
-import Loomeric.Group
-import Loomeric.Ring
+import Loomeric.Algebra.Group
+import Loomeric.Algebra.Ring
 
 class (Semiring s, AdditiveMonoid a) => SemiModule s a where
     (*^) :: s -> a -> a

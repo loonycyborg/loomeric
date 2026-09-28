@@ -15,14 +15,14 @@ library
     import: common-options
     hs-source-dirs: src
     exposed-modules: LoomericPrelude
-                     Loomeric.Group
-                     Loomeric.Ring
-                     Loomeric.Conversions
-                     Loomeric.Peano
-                     Loomeric.Ratio
-                     Loomeric.Complex
-                     Loomeric.Integer
-                     Loomeric.Field
-                     Loomeric.Module
-                     Loomeric.VectorSpace
+                     Loomeric.Algebra.Group
+                     Loomeric.Algebra.Ring
+                     Loomeric.Data.Conversions
+                     Loomeric.Data.Peano
+                     Loomeric.Data.Ratio
+                     Loomeric.Data.Complex
+                     Loomeric.Data.Integer
+                     Loomeric.Algebra.Field
+                     Loomeric.Algebra.Module
+                     Loomeric.Algebra.VectorSpace
     build-depends: base, ghc-bignum, ghc-typelits-natnormalise, ghc-typelits-knownnat, singleton-bool, mono-traversable
