@@ -24,4 +24,5 @@ library
                      Loomeric.Integer
                      Loomeric.Field
                      Loomeric.Module
+                     Loomeric.VectorSpace
     build-depends: base, ghc-bignum, ghc-typelits-natnormalise, ghc-typelits-knownnat, singleton-bool, mono-traversable

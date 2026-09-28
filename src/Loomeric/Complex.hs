@@ -1,12 +1,15 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilies, DataKinds #-}
 module Loomeric.Complex where
 
 import Data.MonoTraversable
+import GHC.Records
+import GHC.TypeLits
 
 import Loomeric.Group
 import Loomeric.Ring
 import Loomeric.Field
 import Loomeric.Module
+import Loomeric.VectorSpace
 
 import Prelude (($), (.), otherwise, Eq(..), Ord(..), Show(..), Read(..), Foldable(..))
 
@@ -67,6 +70,19 @@ instance Semiring a => SemiModule a (Complex a)
 instance Ring a => Module a (Complex a)
 instance ExponentialField a => Normed a (Complex a) where
     norm (x :+ x') = sqrt $ x * x + x' * x'
+
+instance Ring a => VectorSpace [ "real", "imag" ] a (Complex a)
+
+instance Ring a => HasCoordinate "real" a (Complex a) where
+    basisVec = one :+ zero
+    coord = realPart
+
+instance Ring a => HasCoordinate "imag" a (Complex a) where
+    basisVec = zero :+ one
+    coord = imagPart
+
+instance (Ring a, HasCoordinate s a (Complex a)) => HasField (s :: Symbol) (Complex a) a where
+    getField = coord @s
 
 realPart :: Complex a -> a
 realPart (x :+ _) = x
