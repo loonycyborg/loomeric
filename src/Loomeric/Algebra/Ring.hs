@@ -1,4 +1,4 @@
-{-# LANGUAGE MagicHash #-}
+{-# LANGUAGE MagicHash, UnliftedDatatypes, UnboxedTuples #-}
 module Loomeric.Algebra.Ring where
 
 import Data.Bool
@@ -8,7 +8,7 @@ import GHC.Natural ( naturalToInteger )
 import GHC.Float ( integerToFloat#, naturalToFloat# )
 import GHC.Exts
 import GHC.Num.Primitives (absI#, sgnI#)
-import Prelude (($), (.), (==), id, uncurry, concatMap, Foldable (), Ord(..))
+import Prelude (($), (.), (==), (^), id, uncurry, concatMap, Foldable (), Ord(..))
 
 import Loomeric.Algebra.Group
 import Loomeric.Data.Conversions
@@ -53,12 +53,28 @@ type Num a = OrderedRing a
 class Semiring a => InvolutionRing a where
     conjugate :: a -> a
 
+class Semiring a => ExponentialSemiring a where
+    (**) :: a -> a -> a
+
+infixr 8 **
+
 instance Semiring Word where
     fromNatural = naturalToWord
 
 instance OrderedSemiring Word where
     signum x = bool 1 0 $ x == 0
     abs = id
+
+instance ExponentialSemiring Word where
+    (W# x) ** (W# y) = W# $ binpow x y where
+        binpow :: Word# -> Word# -> Word#
+        binpow x# y# = case (# y#, y# `and#` 1## #) of
+            (# 0##, _   #) -> 1##
+            (# _  , 1## #) -> timesWord# (shifted_pow x# y#) x#
+            (# _  , _   #) -> shifted_pow x# y#
+            where
+            pow2 x = timesWord# x x
+            shifted_pow x y = pow2 $ binpow x (shiftRL# y 1#)
 
 instance Semiring Int where
     fromNatural = integerToInt . naturalToInteger
@@ -81,11 +97,16 @@ instance OrderedSemiring Float where
     abs (F# x) = F# $ fabsFloat# x
 instance OrderedRing Float
 
+instance ExponentialSemiring Float where
+    (F# a) ** (F# b) = F# $ powerFloat# a b
+
 instance Semiring Natural where
     fromNatural = id
 instance OrderedSemiring Natural where
     signum = naturalSignum
     abs = id
+instance ExponentialSemiring Natural where
+    (**) = (^)
 
 instance Semiring Integer where
     fromNatural = naturalToInteger

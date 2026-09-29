@@ -61,13 +61,15 @@ instance Ring a => InvolutionRing (Complex a) where
 instance ExponentialField a => Field (Complex a) where
     fromRational n = fromRational n :+ zero
 
+instance (ExponentialField a, Ord a, TrigonometricField a) => ExponentialSemiring (Complex a) where
+    x ** y = exp $ y * log x
+
 instance (ExponentialField a, Eq a, Ord a, TrigonometricField a) => ExponentialField (Complex a) where
     sqrt a@(x :+ x') = s1 * sqrt ((a.r + x)/(one + one)) :+ s2 * sqrt ((a.r - x)/(one + one)) where
         s1 = one
         s2 = if x' >= zero then one else negate one
     exp a@(x :+ x') = exp x *^ (cos x' :+ sin x')
     log x = log x.r :+ x.theta
-    x ** y = exp $ y * log x
 
 instance Semiring a => SemiModule a (Complex a)
 instance Ring a => Module a (Complex a)

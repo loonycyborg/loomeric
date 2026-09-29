@@ -10,8 +10,6 @@ import Loomeric.Algebra.Group
 import Loomeric.Algebra.Ring
 import Loomeric.Data.Ratio
 
-infixr 8 **
-
 {- | === A characteristic 0 algebraic field
 
     A 'Ring' that is group both under addition and multiplication.
@@ -28,9 +26,8 @@ type Fractional a = Field a
     A 'Field' that is closed under exponentation, perhaps with some limitations
     like roots of negative numbers.
 -}
-class Field a => ExponentialField a where
+class (Field a, ExponentialSemiring a) => ExponentialField a where
     sqrt :: a -> a
-    (**) :: a -> a -> a
     exp :: a -> a
     log :: a -> a
 
@@ -55,7 +52,6 @@ instance Field Float where
 
 instance ExponentialField Float where
     sqrt (F# x) = F# $ sqrtFloat# x
-    (F# a) ** (F# b) = F# $ powerFloat# a b
     exp (F# x) = F# $ expFloat# x
     log (F# x) = F# $ logFloat# x
 
