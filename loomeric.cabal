@@ -22,6 +22,7 @@ library
                      Loomeric.Data.Ratio
                      Loomeric.Data.Complex
                      Loomeric.Data.Integer
+                     Loomeric.Data.Vector
                      Loomeric.Algebra.Field
                      Loomeric.Algebra.Module
                      Loomeric.Algebra.VectorSpace
