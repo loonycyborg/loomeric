@@ -26,4 +26,4 @@ library
                      Loomeric.Algebra.Field
                      Loomeric.Algebra.Module
                      Loomeric.Algebra.VectorSpace
-    build-depends: base, ghc-bignum, ghc-typelits-natnormalise, ghc-typelits-knownnat, singleton-bool, mono-traversable
+    build-depends: base, ghc-bignum, ghc-typelits-natnormalise, ghc-typelits-knownnat, singleton-bool, mono-traversable, generics-sop
