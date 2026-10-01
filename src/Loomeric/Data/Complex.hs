@@ -76,7 +76,7 @@ instance Ring a => Module a (Complex a)
 instance ExponentialField a => Normed a (Complex a) where
     norm (x :+ x') = sqrt $ x * x + x' * x'
 
-instance Ring a => VectorSpace [ "real", "imag" ] a (Complex a)
+instance Field a => VectorSpace [ "real", "imag" ] a (Complex a)
 
 instance Ring a => HasCoordinate "real" a (Complex a) where
     basisVec = one :+ zero

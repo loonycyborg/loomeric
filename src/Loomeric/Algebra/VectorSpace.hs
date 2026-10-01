@@ -6,8 +6,13 @@ import Data.Kind
 
 import Loomeric.Algebra.Module
 import Loomeric.Algebra.Group
+import Loomeric.Algebra.Field
 
-class (Module s a, AdditiveGroup a, Coords coords s a, 1 <= Dimension coords) => VectorSpace (coords :: [Symbol]) s a
+class (Module s a, AdditiveGroup a, Field s, Coords coords s a, 1 <= Dimension coords) => VectorSpace (coords :: [Symbol]) s a | a s -> coords where
+    (^/) :: a -> s -> a
+    x ^/ y = x ^* inverse y
+    (/^) :: s -> a -> a
+    x /^ y = inverse x *^ y
 
 class (VectorSpace n s a, Normed s a) => NormedVectorSpace n s a
 

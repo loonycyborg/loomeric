@@ -15,6 +15,7 @@ import Prelude (fst, ($), (.), repeat, map, zip, unzip, error, Eq(..), Foldable(
 
 import Loomeric.Algebra.VectorSpace
 import Loomeric.Algebra.Ring
+import Loomeric.Algebra.Field
 import Loomeric.Algebra.Group
 import Loomeric.Algebra.Module
 
@@ -108,9 +109,9 @@ instance (Ring a, GenericVector n a, MonoZip (Vector n a)) => AdditiveGroup (Vec
 instance (Ring a, GenericVector n a, MonoZip (Vector n a)) => SemiModule a (Vector n a)
 instance (Ring a, GenericVector n a, MonoZip (Vector n a)) => Module a (Vector n a)
 
-instance Ring a => VectorSpace ["x", "y"] a (Vector2D a)
-instance Ring a => VectorSpace ["x", "y", "z"] a (Vector3D a)
-instance Ring a => VectorSpace ["x", "y", "z", "w"] a (Vector4D a)
+instance Field a => VectorSpace ["x", "y"] a (Vector2D a)
+instance Field a => VectorSpace ["x", "y", "z"] a (Vector3D a)
+instance Field a => VectorSpace ["x", "y", "z", "w"] a (Vector4D a)
 
 type CoordNum :: Symbol -> Nat
 type family CoordNum s where
