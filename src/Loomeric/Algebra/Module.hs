@@ -1,4 +1,4 @@
-{-# LANGUAGE DefaultSignatures, MagicHash #-}
+{-# LANGUAGE DefaultSignatures, FunctionalDependencies, MagicHash #-}
 module Loomeric.Algebra.Module where
 import Data.MonoTraversable
 import Data.Type.Equality
@@ -23,11 +23,8 @@ instance Semiring a => SemiModule a a where
     (*^) = (*)
     (^*) = (*)
 
-class SemiModule s a => Normed s a where
+class SemiModule s a => Normed s a | a -> s where
     norm :: a -> s
-
-instance OrderedSemiring a => Normed a a where
-    norm = abs
 
 instance SemiModule Int Float where
     (I# x) *^ (F# y) = F# $ timesFloat# (int2Float# x) y
