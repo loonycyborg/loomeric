@@ -128,3 +128,6 @@ instance (Ring a, GenericVector n a, coordN ~ CoordNum s, HasField s (Vector n a
                    bool2a False = zero
                in to . SOP . Z . htoI . fromJust . fromList @(VectorCode n a) $ map (bool2a . (==dim_coord)) [0 .. max_coord - 1]
     coord = getField @s
+
+instance (GenericVector n a, ExponentialField a) => Normed a (Vector n a) where
+    norm x = sqrt $ linearCombination $ ozip x x

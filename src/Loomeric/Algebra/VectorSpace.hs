@@ -8,13 +8,13 @@ import Loomeric.Algebra.Module
 import Loomeric.Algebra.Group
 import Loomeric.Algebra.Field
 
-class (Module s a, AdditiveGroup a, Field s, Coords coords s a, 1 <= Dimension coords) => VectorSpace (coords :: [Symbol]) s a | a s -> coords where
+class (Module s a, AdditiveGroup a, Field s, Coords coords s a, 1 <= Dimension coords) => VectorSpace (coords :: [Symbol]) s a | a coords -> s where
     (^/) :: a -> s -> a
     x ^/ y = x ^* inverse y
     (/^) :: s -> a -> a
     x /^ y = inverse x *^ y
 
-class (VectorSpace n s a, Normed s a) => NormedVectorSpace n s a
+class (VectorSpace n s a, Normed s a) => NormedVectorSpace n s a | a n -> s
 
 type Dimension :: [Symbol] -> Nat
 type family Dimension sl where
