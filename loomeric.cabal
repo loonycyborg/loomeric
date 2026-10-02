@@ -27,3 +27,10 @@ library
                      Loomeric.Algebra.Module
                      Loomeric.Algebra.VectorSpace
     build-depends: base, ghc-bignum, ghc-typelits-natnormalise, ghc-typelits-knownnat, singleton-bool, mono-traversable, generics-sop
+
+executable example
+  import: common-options
+  main-is: Main.hs
+  ghc-options: -threaded -O3
+  build-depends: base, loomeric-prelude
+  hs-source-dirs: example

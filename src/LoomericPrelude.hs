@@ -1,6 +1,20 @@
 {-# LANGUAGE NamedDefaults #-}
-module LoomericPrelude where
+module LoomericPrelude (
+    module LoomericPrelude,
+    module Prelude,
+    module Generics.SOP,
+    module Loomeric.Algebra.Group,
+    module Loomeric.Algebra.Ring,
+    module Loomeric.Algebra.Field,
+    module Loomeric.Data.Conversions,
+    module Loomeric.Data.Integer,
+    module Loomeric.Data.Ratio,
+    module Loomeric.Algebra.Module,
+    module Loomeric.Algebra.VectorSpace
+    ) where
 import Prelude hiding (Num(..), Real(..), Integral(..), Fractional(..), Floating(..), RealFrac(..), RealFloat(..), Rational, subtract, even, odd, gcd, lcm, (^), (^^), fromIntegral, realToFrac, product, sum)
+
+import Generics.SOP
 
 import Loomeric.Algebra.Group
 import Loomeric.Algebra.Ring
