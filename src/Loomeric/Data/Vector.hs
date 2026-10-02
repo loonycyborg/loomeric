@@ -80,7 +80,7 @@ type GenericVector n a = (Generic (Vector n a), Code (Vector n a) ~ '[ VectorCod
 
 instance (Ring a, GenericVector n a) => MonoFunctor (Vector n a) where
     omap f x = to $ case from x of
-        a -> htoI $ hmap (\(K x) -> K (f x)) (hfromI a :: SOP (K a) '[VectorCode n a])
+        a -> htoI $ hmap (mapKK f) (hfromI a :: SOP (K a) '[VectorCode n a])
 
 instance (Ring a, GenericVector n a) => MonoZip (Vector n a) where
     ozip x y = case (from x, from y) of
@@ -88,7 +88,7 @@ instance (Ring a, GenericVector n a) => MonoZip (Vector n a) where
             (hcollapse (hfromI sop1 :: SOP (K a) '[ VectorCode n a ]))
             (hcollapse (hfromI sop2 :: SOP (K a) '[ VectorCode n a ]))
     ozipWith f x y = to $ case (from x, from y) of
-        (SOP (Z pop1), SOP (Z pop2)) -> SOP $ Z $ htoI $ hliftA2 (\(K x) (K y) -> K (f x y))
+        (SOP (Z pop1), SOP (Z pop2)) -> SOP $ Z $ htoI $ hliftA2 (mapKKK f)
             (hfromI pop1)
             (hfromI pop2 :: NP (K a) (VectorCode n a))
     ounzip l = bimap mkVec mkVec $ unzip l where
