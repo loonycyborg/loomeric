@@ -15,7 +15,7 @@ import Data.Type.Ord
 import Control.Category
 
 import Loomeric.Algebra.Group
-import Loomeric.Data.Conversions
+import Loomeric.Data.Conversions.Integer
 import Loomeric.Algebra.Ring
 import Loomeric.Data.Integer
 

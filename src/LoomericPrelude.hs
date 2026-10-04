@@ -6,7 +6,8 @@ module LoomericPrelude (
     module Loomeric.Algebra.Group,
     module Loomeric.Algebra.Ring,
     module Loomeric.Algebra.Field,
-    module Loomeric.Data.Conversions,
+    module Loomeric.Data.Conversions.Integer,
+    module Loomeric.Data.Conversions.Partial,
     module Loomeric.Data.Integer,
     module Loomeric.Data.Ratio,
     module Loomeric.Algebra.Module,
@@ -19,7 +20,8 @@ import Generics.SOP
 import Loomeric.Algebra.Group
 import Loomeric.Algebra.Ring
 import Loomeric.Algebra.Field
-import Loomeric.Data.Conversions
+import Loomeric.Data.Conversions.Integer
+import Loomeric.Data.Conversions.Partial
 import Loomeric.Data.Integer
 import Loomeric.Data.Ratio
 import Loomeric.Algebra.Module

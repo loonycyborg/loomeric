@@ -1,11 +1,20 @@
 {-# LANGUAGE TypeFamilies, MagicHash, DefaultSignatures #-}
-module Loomeric.Data.Conversions where
+module Loomeric.Data.Conversions.Integer where
 import Prelude (($), id, Int, Word)
 import GHC.Num.Integer
 import GHC.Num.Natural
 import GHC.Natural
 import Data.Kind
 import GHC.Exts
+
+class ToNatural a where
+    toNatural :: a -> Natural
+
+instance ToNatural Word where
+    toNatural = naturalFromWord
+
+instance ToNatural Natural where
+    toNatural = id
 
 class ToInteger a where
     toInteger :: a -> Integer
@@ -18,6 +27,9 @@ instance ToInteger Int where
 
 instance ToInteger Word where
     toInteger = integerFromWord
+
+instance ToInteger Integer where
+    toInteger = id
 
 type SignedType :: Type -> Type
 type family SignedType a where

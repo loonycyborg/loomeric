@@ -17,7 +17,10 @@ library
     exposed-modules: LoomericPrelude
                      Loomeric.Algebra.Group
                      Loomeric.Algebra.Ring
-                     Loomeric.Data.Conversions
+                     Loomeric.Data.Conversions.Integer
+                     Loomeric.Data.Conversions.Float
+                     Loomeric.Data.Conversions.Rational
+                     Loomeric.Data.Conversions.Partial
                      Loomeric.Data.Peano
                      Loomeric.Data.Ratio
                      Loomeric.Data.Complex

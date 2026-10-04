@@ -11,7 +11,7 @@ import GHC.Num.Primitives (absI#, sgnI#)
 import Prelude (($), (.), (==), (^), id, uncurry, concatMap, Foldable (), Ord(..))
 
 import Loomeric.Algebra.Group
-import Loomeric.Data.Conversions
+import Loomeric.Data.Conversions.Integer
 
 {- | === An algebraic semiring
 
