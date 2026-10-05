@@ -31,10 +31,11 @@ instance AdditivePartialAction Word where
 instance AdditivePartialAction Natural where
     (+?) = addActionUnsigned
 
-addActionUnsigned :: (Semiring a, Countable b) => a -> b -> Maybe a
+addActionUnsigned :: (Semiring a, AdditivePartialGroup a, Countable b) => a -> b -> Maybe a
 addActionUnsigned x y = case toNumber y of
-        (_, _, Just n) -> Just $ x + fromNatural n
-        _              -> Nothing
+        (_, _, Just n)  -> Just $ x + fromNatural n
+        (_, Just sn, _) -> x -? fromNatural (signTruncate sn)
+        _               -> Nothing
 
 instance AdditivePartialAction Int where
     (+?) = addActionSigned
