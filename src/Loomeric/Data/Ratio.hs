@@ -77,6 +77,12 @@ instance EuclideanDomain a => SemiModule a (Ratio a) where
 
 instance (EuclideanDomain a, Ring a) => Module a (Ratio a)
 
+instance EuclideanDomain a => OrderedSemiring (Ratio a) where
+    abs (x :% _) = abs x :% one
+    signum (x :% _) = signum x :% one
+
+instance (EuclideanDomain a, Ring a) => OrderedRing (Ratio a)
+
 instance  (Show a)  => Show (Ratio a)  where
     showsPrec p (x:%y)  =  showParen (p > 7) $
                            showsPrec 8 x .

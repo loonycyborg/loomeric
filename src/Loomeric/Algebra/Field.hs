@@ -9,6 +9,7 @@ import Prelude (($))
 import Loomeric.Algebra.Group
 import Loomeric.Algebra.Ring
 import Loomeric.Data.Ratio
+import Loomeric.Data.Integer
 
 {- | === A characteristic 0 algebraic field
 
@@ -46,6 +47,9 @@ class Field a => TrigonometricField a where
     asinh :: a -> a
     acosh :: a -> a
     atanh :: a -> a
+
+instance (EuclideanDomain a, Ring a) => Field (Ratio a) where
+    fromRational x = fromInteger (numerator x) % fromInteger (denominator x)
 
 instance Field Float where
     fromRational x = rationalToFloat (numerator x) (denominator x)

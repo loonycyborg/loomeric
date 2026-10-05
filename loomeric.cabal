@@ -29,6 +29,8 @@ library
                      Loomeric.Algebra.Field
                      Loomeric.Algebra.Module
                      Loomeric.Algebra.VectorSpace
+                     Loomeric.Algebra.Partial
+                     Loomeric.Algebra.PartialAction
     build-depends: base, ghc-bignum, ghc-typelits-natnormalise, ghc-typelits-knownnat, singleton-bool, mono-traversable, generics-sop
 
 executable example

@@ -11,7 +11,9 @@ module LoomericPrelude (
     module Loomeric.Data.Integer,
     module Loomeric.Data.Ratio,
     module Loomeric.Algebra.Module,
-    module Loomeric.Algebra.VectorSpace
+    module Loomeric.Algebra.VectorSpace,
+    module Loomeric.Algebra.Partial,
+    module Loomeric.Algebra.PartialAction
     ) where
 import Prelude hiding (Num(..), Real(..), Integral(..), Fractional(..), Floating(..), RealFrac(..), RealFloat(..), Rational, subtract, even, odd, gcd, lcm, (^), (^^), fromIntegral, realToFrac, product, sum)
 
@@ -26,6 +28,8 @@ import Loomeric.Data.Integer
 import Loomeric.Data.Ratio
 import Loomeric.Algebra.Module
 import Loomeric.Algebra.VectorSpace
+import Loomeric.Algebra.Partial
+import Loomeric.Algebra.PartialAction
 
 default AdditiveSemigroup (Int, Float)
 default MultiplicativeSemigroup (Int, Float)

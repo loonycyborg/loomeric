@@ -17,6 +17,7 @@ import Control.Category
 import Loomeric.Algebra.Group
 import Loomeric.Data.Conversions.Integer
 import Loomeric.Algebra.Ring
+import Loomeric.Algebra.Partial
 import Loomeric.Data.Integer
 
 data Peano :: Nat -> Type where

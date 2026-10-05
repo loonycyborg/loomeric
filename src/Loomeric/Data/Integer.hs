@@ -1,10 +1,9 @@
-{-# LANGUAGE MagicHash, UnboxedTuples, DefaultSignatures #-}
+{-# LANGUAGE MagicHash, UnboxedTuples #-}
 module Loomeric.Data.Integer where
 
 import Data.Maybe
 import Control.Applicative
 import Control.Category
-import Control.Monad
 import GHC.Num.Natural
 import GHC.Num.Integer
 import GHC.Num.BigNat
@@ -14,45 +13,9 @@ import Prelude (fst, snd, not, (==), ($), otherwise, error, Ord(..))
 
 import Loomeric.Algebra.Group
 import Loomeric.Algebra.Ring
+import Loomeric.Algebra.Partial
 
-infixl 7 `quot`, `rem`, /?
-infixl 6 -?
-
-{- | === A partial group under addition
-
-    An additive monoid that has subtraction operation that it is only actually defined for
-    /some/ pairs of elements. Partial subtraction '-?' returns 'Nothing' for elements which can't be
-    subtracted. It should satisfy:
-
-    * @a -? a = Just zero@
-    * If @a -? b = Just c@ then @a = c + b@
--}
-class AdditiveMonoid a => AdditivePartialGroup a where
-    (-?) :: a -> a -> Maybe a
-    default (-?) :: PeanoSystem a => a -> a -> Maybe a
-    a -? b = case decrement b of
-        Nothing -> Just a
-        Just p  -> (-? p) =<< decrement a
-    -- | Calls 'error' for elements that can't be subtracted instead
-    (-!) :: a -> a -> a
-    a -! b = fromJust $ (a -? b) <|> error "Subtraction underflow"
-
-{- | === A partial group under multiplication
-
-    A multiplicative monoid that has partial division operation '/?' that satisfies:
-
-    * @a /? a = Just one@
-    * if @a /? b = Just c@ then @a = c * b@
-
-    '/?' returns 'Nothing' for elements for which division isn't defined
--}
-class MultiplicativeMonoid a => MultiplicativePartialGroup a where
-    (/?) :: a -> a -> Maybe a
-    default (/?) :: EuclideanDomain a => a -> a -> Maybe a
-    a /? b = case quotRem a b of
-        (result, z) | z == zero -> Just result
-        _                       -> Nothing
-
+infixl 7 `quot`, `rem`
 
 {- | === A Peano-like set
 
@@ -86,24 +49,6 @@ class (OrderedSemiring a, MultiplicativePartialGroup a) => EuclideanDomain a whe
             | otherwise = abs ((x `quot` gcd x y) * y)
 
 type Integral a = EuclideanDomain a
-
-instance AdditivePartialGroup Natural where
-    x -? y = case naturalSub x y of
-        (# (# #) | #) -> Nothing
-        (# | res #)   -> Just res
-
-instance AdditivePartialGroup Word where
-    (W# a) -? (W# b) = case subWordC# a b of
-        (# result, 0# #) -> Just $ W# result
-        (# _     , _  #) -> Nothing
-
-instance MultiplicativePartialGroup Natural
-
-instance MultiplicativePartialGroup Integer
-
-instance MultiplicativePartialGroup Int
-
-instance MultiplicativePartialGroup Word
 
 instance PeanoSystem Word where
     increment (W# x) = W# $ plusWord# x 1##
