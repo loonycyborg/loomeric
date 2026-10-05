@@ -36,7 +36,7 @@ x % y = normalize $ x :% y
 infixl 7 %
 
 normalize :: Ratio a -> Ratio a
-normalize (x :% y) = (signum y * abs x `quot` g) :% (abs y `quot` g) where
+normalize (x :% y) = (signum y * x `quot` g) :% (abs y `quot` g) where
     g = gcd x y
 
 numerator :: Ratio a -> a
