@@ -31,7 +31,7 @@ library
                      Loomeric.Algebra.VectorSpace
                      Loomeric.Algebra.Partial
                      Loomeric.Algebra.PartialAction
-    build-depends: base, ghc-bignum, ghc-typelits-natnormalise, ghc-typelits-knownnat, singleton-bool, mono-traversable, generics-sop
+    build-depends: base, ghc-bignum, ghc-typelits-natnormalise, ghc-typelits-knownnat, typelits-witnesses, singleton-bool, mono-traversable, generics-sop
 
 executable example
   import: common-options
