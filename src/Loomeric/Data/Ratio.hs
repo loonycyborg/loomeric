@@ -1,5 +1,5 @@
-{-# LANGUAGE TypeFamilies #-}
-module Loomeric.Data.Ratio ((%), numerator, denominator, Ratio, Rational) where
+{-# LANGUAGE TypeFamilies, PatternSynonyms #-}
+module Loomeric.Data.Ratio ((%), pattern (:/), numerator, denominator, Ratio, Rational) where
 import Control.Applicative
 import Data.MonoTraversable
 
@@ -12,6 +12,9 @@ import Prelude (($), (.), (>), undefined, Show(..), Eq(..), Ord(..), Foldable(..
 
 data Ratio a where
     (:%) :: EuclideanDomain a => a -> a -> Ratio a
+
+pattern x :/ y <- x :% y where
+    x :/ y = x % y
 
 deriving instance Eq (Ratio a)
 deriving instance Foldable Ratio

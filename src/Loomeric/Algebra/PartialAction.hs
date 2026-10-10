@@ -116,7 +116,7 @@ naturalRoot operand degree = if operand == zero then Just zero else bisect one o
                 LT -> bisect (try + one) to
 
 rationalExp :: (ExponentialSemiring a, AdditivePartialGroup a,  EuclideanDomain a) => a -> Ratio Integer -> Maybe a
-rationalExp x r = (** fromNatural (absG $ numerator r)) <$> naturalRoot x (fromNatural $ absG $ denominator r)
+rationalExp x (r :/ r') = (** fromNatural (absG r)) <$> naturalRoot x (fromNatural $ absG r')
 
 instance ExponentialPartialAction Int where
     (**?) = expActionSigned @Int @_ @Word
@@ -138,9 +138,9 @@ expActionSigned @a @b @u x y = case toNumber y of
 instance (SignConvert u, a ~ SignedType u, SignTruncate u,
     ExponentialPartialAction u, ExponentialSemiring u, AdditivePartialGroup u, EuclideanDomain u,
     EuclideanDomain a) => ExponentialPartialAction (Ratio a) where
-    x **? y = case (numerator x, denominator x, toNumber y) of
-        (x, x', (Just r, _, _)) -> liftM2 (%) (expActionSigned @a @_ @u x r) (expActionSigned @a @_ @u x' r)
+    (x :/ x') **? y = case toNumber y of
+        (Just r, _, _) -> liftM2 (%) (expActionSigned @a @_ @u x r) (expActionSigned @a @_ @u x' r)
         _                       -> Nothing
-    x **! y = case (numerator x, denominator x, toNumber y) of
-        (x, x', (Just r, _, _)) -> fromJust $ liftM2 (%) (expActionSigned @a @_ @u x r) (expActionSigned @a @_ @u x' r) <|> error "Invalid exponentiation"
+    (x :/ x') **! y = case toNumber y of
+        (Just r, _, _) -> fromJust $ liftM2 (%) (expActionSigned @a @_ @u x r) (expActionSigned @a @_ @u x' r) <|> error "Invalid exponentiation"
         _                       -> error "not a rational"
