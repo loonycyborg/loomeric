@@ -1,7 +1,8 @@
-{-# LANGUAGE MagicHash, UnliftedDatatypes, UnboxedTuples #-}
+{-# LANGUAGE MagicHash, UnliftedDatatypes, UnboxedTuples, TypeFamilies, DefaultSignatures #-}
 module Loomeric.Algebra.Ring where
 
 import Data.Bool
+import Data.Kind
 import GHC.Num.Natural
 import GHC.Num.Integer
 import GHC.Natural ( naturalToInteger )
@@ -12,6 +13,7 @@ import Prelude (($), (.), (==), (^), id, uncurry, concatMap, Foldable (), Ord(..
 
 import Loomeric.Algebra.Group
 import Loomeric.Data.Conversions.Integer
+
 
 {- | === An algebraic semiring
 
@@ -40,13 +42,21 @@ class (AdditiveGroup a, Semiring a) => Ring a where
     fromInteger :: Integer -> a
 
 class (Semiring a, Ord a) => OrderedSemiring a where
+    type Signing a :: Type
+    toSigned :: a -> Signing a
+    default toSigned :: Signing a ~ a => a -> Signing a
+    toSigned = id
     signum :: a -> a
     abs :: a -> a
     abs x = signum x * x
-    absG :: (SignedType b ~ a, SignTruncate b) => a -> b
-    absG = signTruncate . abs
 
-class (OrderedSemiring a, Ring a) => OrderedRing a
+class (OrderedSemiring a, Ring a, Signing (Unsigning a) ~ a, OrderedSemiring (Unsigning a)) => OrderedRing a where
+    type Unsigning a :: Type
+    toUnsignedUnsafe :: a -> Unsigning a
+    default toUnsignedUnsafe :: Unsigning a ~ a => a -> Unsigning a
+    toUnsignedUnsafe = id
+    absG :: (b ~ Unsigning a) => a -> b
+    absG = toUnsignedUnsafe . abs
 
 type Num a = OrderedRing a
 
@@ -62,6 +72,8 @@ instance Semiring Word where
     fromNatural = naturalToWord
 
 instance OrderedSemiring Word where
+    type Signing Word = Int
+    toSigned (W# x) = I# $ word2Int# x
     signum x = bool 1 0 $ x == 0
     abs = id
 
@@ -81,21 +93,26 @@ instance Semiring Int where
 instance Ring Int where
     fromInteger = integerToInt
 instance OrderedSemiring Int where
+    type Signing Int = Int
     abs (I# x) = I# $ absI# x
     signum (I# x) = I# $ sgnI# x
-instance OrderedRing Int
+instance OrderedRing Int where
+    type Unsigning Int = Word
+    toUnsignedUnsafe (I# x) = W# $ int2Word# x
 
 instance Semiring Float where
     fromNatural x = F# $ naturalToFloat# x
 instance Ring Float where
     fromInteger x = F# $ integerToFloat# x
 instance OrderedSemiring Float where
+    type Signing Float = Float
     signum x
         | x > 0     = 1
         | x < 0     = -1
         | otherwise = x
     abs (F# x) = F# $ fabsFloat# x
-instance OrderedRing Float
+instance OrderedRing Float where
+    type Unsigning Float = Float
 
 instance ExponentialSemiring Float where
     (F# a) ** (F# b) = F# $ powerFloat# a b
@@ -103,6 +120,8 @@ instance ExponentialSemiring Float where
 instance Semiring Natural where
     fromNatural = id
 instance OrderedSemiring Natural where
+    type Signing Natural = Integer
+    toSigned = naturalToInteger
     signum = naturalSignum
     abs = id
 instance ExponentialSemiring Natural where
@@ -114,7 +133,10 @@ instance Ring Integer where
     fromInteger = id
 
 instance OrderedSemiring Integer where
+    type Signing Integer = Integer
     abs = integerAbs
     signum = integerSignum
 
-instance OrderedRing Integer
+instance OrderedRing Integer where
+    type Unsigning Integer = Natural
+    toUnsignedUnsafe = integerToNatural

@@ -10,7 +10,7 @@ import GHC.Num.Integer
 import GHC.Float (Float(..))
 import Data.Type.Equality
 
-import Prelude (($), (.), (==), (&&), const, id, error, uncurry, any, Bool(..), Word(..), Int(..), Ord(..), Ordering(..))
+import Prelude (($), (.), (==), (&&), (||), const, id, error, uncurry, any, Bool(..), Word(..), Int(..), Ord(..), Ordering(..))
 
 import Loomeric.Algebra.Group
 import Loomeric.Algebra.Ring
@@ -107,7 +107,7 @@ expActionUnsigned x y = case toNumber y of
         _              -> Nothing
 
 naturalRoot :: (ExponentialSemiring a, OrderedSemiring a, AdditivePartialGroup a, EuclideanDomain a) => a -> a -> Maybe a
-naturalRoot operand degree = if operand == zero then Just zero else bisect one operand where
+naturalRoot operand degree = if operand == zero || operand == one then Just operand else bisect one operand where
     bisect from to = if to == from then Nothing else
         let try = from + quot (to -! from) (one + one) in
             case compare (try ** degree) operand of
@@ -119,28 +119,24 @@ rationalExp :: (ExponentialSemiring a, AdditivePartialGroup a,  EuclideanDomain 
 rationalExp x (r :/ r') = (** fromNatural (absG r)) <$> naturalRoot x (fromNatural $ absG r')
 
 instance ExponentialPartialAction Int where
-    (**?) = expActionSigned @Int @_ @Word
+    (**?) = expActionSigned
 
 instance ExponentialPartialAction Integer where
-    (**?) = expActionSigned @Integer @_ @Natural
+    (**?) = expActionSigned
 
-expActionSigned :: forall a b u . (
-    Countable b, SignConvert u, a ~ SignedType u, SignTruncate u,
-    ExponentialPartialAction u, ExponentialSemiring u, AdditivePartialGroup u, EuclideanDomain u,
-    EuclideanDomain a) => a -> b -> Maybe a
-expActionSigned @a @b @u x y = case toNumber y of
-        (_, _, Just n) -> (sign n *) . signConvert @u <$> (absG x **? n)
-        (Just r, _, _) -> if r >= zero then imaginary_root (denominator r) . (sign (numerator r) *) . signConvert @u =<< rationalExp (absG x) r else Nothing
-        _              -> Nothing
+expActionSigned :: (OrderedRing a,
+    ExponentialPartialAction (Unsigning a), ExponentialSemiring (Unsigning a), AdditivePartialGroup (Unsigning a), EuclideanDomain (Unsigning a),
+    Countable b) => a -> b -> Maybe a
+expActionSigned x y = case toNumber y of
+        (_, _, Just n) -> (sign n *) . toSigned <$> (absG x **? n)
+        (Just n@(r :/ r'), _, _) -> if r >= zero then imaginary_root r . (sign r' *) . toSigned =<< rationalExp (absG x) n else Nothing
+        _                        -> Nothing
         where sign n = if odd n then signum x else one
               imaginary_root degree = if even degree && x < zero then const Nothing else Just
 
-instance (SignConvert u, a ~ SignedType u, SignTruncate u,
-    ExponentialPartialAction u, ExponentialSemiring u, AdditivePartialGroup u, EuclideanDomain u,
-    EuclideanDomain a) => ExponentialPartialAction (Ratio a) where
+instance (EuclideanDomain a, OrderedRing a,
+    ExponentialPartialAction (Unsigning a), ExponentialSemiring (Unsigning a), AdditivePartialGroup (Unsigning a), EuclideanDomain (Unsigning a)
+    ) => ExponentialPartialAction (Ratio a) where
     (x :/ x') **? y = case toNumber y of
-        (Just r, _, _) -> liftM2 (%) (expActionSigned @a @_ @u x r) (expActionSigned @a @_ @u x' r)
-        _                       -> Nothing
-    (x :/ x') **! y = case toNumber y of
-        (Just r, _, _) -> fromJust $ liftM2 (%) (expActionSigned @a @_ @u x r) (expActionSigned @a @_ @u x' r) <|> error "Invalid exponentiation"
-        _                       -> error "not a rational"
+        (Just r, _, _) -> liftM2 (%) (expActionSigned x r) (expActionSigned x' r)
+        _              -> Nothing

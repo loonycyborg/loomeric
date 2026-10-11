@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies, PatternSynonyms #-}
+{-# LANGUAGE TypeFamilies, PatternSynonyms, UndecidableInstances #-}
 module Loomeric.Data.Ratio ((%), pattern (:/), numerator, denominator, Ratio, Rational) where
 import Control.Applicative
 import Data.MonoTraversable
@@ -80,11 +80,15 @@ instance EuclideanDomain a => SemiModule a (Ratio a) where
 
 instance (EuclideanDomain a, Ring a) => Module a (Ratio a)
 
-instance EuclideanDomain a => OrderedSemiring (Ratio a) where
+instance (EuclideanDomain a, EuclideanDomain (Signing a)) => OrderedSemiring (Ratio a) where
+    type Signing (Ratio a) = Ratio (Signing a)
+    toSigned (x :% x') = toSigned x :% toSigned x'
     abs (x :% _) = abs x :% one
     signum (x :% _) = signum x :% one
 
-instance (EuclideanDomain a, Ring a) => OrderedRing (Ratio a)
+instance (EuclideanDomain a, EuclideanDomain (Signing a), EuclideanDomain (Unsigning a), OrderedRing a) => OrderedRing (Ratio a) where
+    type Unsigning (Ratio a) = Ratio (Unsigning a)
+    toUnsignedUnsafe (x :% x') = toUnsignedUnsafe x :% toUnsignedUnsafe x'
 
 instance  (Show a)  => Show (Ratio a)  where
     showsPrec p (x:%y)  =  showParen (p > 7) $
