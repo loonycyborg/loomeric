@@ -39,7 +39,7 @@ instance AdditivePartialAction Natural where
 addActionUnsigned :: (Semiring a, AdditivePartialGroup a, Countable b) => a -> b -> Maybe a
 addActionUnsigned x y = case toNumber y of
         (_, _, Just n) -> Just $ x + fromNatural n
-        (_, sn, _)     -> (x-?) . fromNatural . signTruncate =<< sn
+        (_, sn, _)     -> (x-?) . fromNatural . absG =<< sn
 
 instance AdditivePartialAction Int where
     (+?) = addActionSigned
@@ -66,12 +66,12 @@ instance MultiplicativePartialAction Natural where
 instance MultiplicativePartialAction Word where
     (*?) = mulActionUnsigned
 
-mulActionUnsigned :: (Semiring a, Ring (SignedType a), MultiplicativePartialGroup a, SignTruncate a, Countable b) => a -> b -> Maybe a
+mulActionUnsigned :: (Semiring a, MultiplicativePartialGroup a, Countable b) => a -> b -> Maybe a
 mulActionUnsigned x y = case toNumber y of
     (_, _, Just n) -> Just $ x * fromNatural n
-    (r, _, _)      -> if any (>= zero) r then
-        liftM2 (,) r r >>= uncurry (/?) . bimap ((x*) . signTruncate . fromInteger . numerator) (signTruncate . fromInteger . denominator)
-        else Nothing
+    (r, _, _)      -> case (any (>= zero) r, r) of
+        (True, Just (n :/ n')) -> x * fromNatural (absG n) /? fromNatural (absG n')
+        _                      -> Nothing
 
 instance MultiplicativePartialAction Int where
     (*?) = mulActionSigned
@@ -79,7 +79,7 @@ instance MultiplicativePartialAction Int where
 instance MultiplicativePartialAction Integer where
     (*?) = mulActionSigned
 
-mulActionSigned :: (Ring a, MultiplicativePartialGroup a, SignTruncate a, Countable b) => a -> b -> Maybe a
+mulActionSigned :: (Ring a, MultiplicativePartialGroup a, Countable b) => a -> b -> Maybe a
 mulActionSigned x y = case toNumber y of
     (_, _, Just  n) -> Just $ x * fromNatural n
     (_, Just sn, _) -> Just $ x * fromInteger sn

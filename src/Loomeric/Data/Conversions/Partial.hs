@@ -27,7 +27,7 @@ instance Countable Integer where
     toNumber x = (Just $ toRational x, Just $ toInteger x, to_natural x) where
         to_natural x = case signum x of
             -1 -> Nothing
-            _  -> Just $ toNatural $ signTruncate @Natural $ abs x
+            _  -> Just $ toNatural $ absG x
 
 instance Countable Rational where
     toNumber x = case (numerator x, denominator x) of

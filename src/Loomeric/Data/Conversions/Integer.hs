@@ -1,4 +1,3 @@
-{-# LANGUAGE TypeFamilies, MagicHash, DefaultSignatures #-}
 module Loomeric.Data.Conversions.Integer where
 import Prelude (($), id, Int, Word)
 import GHC.Num.Integer
@@ -30,39 +29,3 @@ instance ToInteger Word where
 
 instance ToInteger Integer where
     toInteger = id
-
-type SignedType :: Type -> Type
-type family SignedType a where
-    SignedType Word    = Int
-    SignedType Natural = Integer
-    SignedType a       = a
-
-class SignConvert a where
-    signConvert :: a -> SignedType a
-    default signConvert :: a ~ SignedType a => a -> SignedType a
-    signConvert = id
-
-instance SignConvert Word where
-    signConvert (W# x) = I# $ word2Int# x
-
-instance SignConvert Natural where
-    signConvert = naturalToInteger
-
-instance SignConvert Int
-instance SignConvert Integer
-instance SignConvert Float
-
-class SignTruncate a where
-    signTruncate :: SignedType a -> a
-    default signTruncate :: SignedType a ~ a => SignedType a -> a
-    signTruncate = id
-
-instance SignTruncate Word where
-    signTruncate (I# x) = W# $ int2Word# x
-
-instance SignTruncate Natural where
-    signTruncate = naturalFromInteger
-
-instance SignTruncate Int
-instance SignTruncate Integer
-instance SignTruncate Float
