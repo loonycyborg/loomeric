@@ -2,8 +2,9 @@ module Loomeric.Data.Conversions.Partial where
 
 import GHC.Num.Integer
 import GHC.Num.Natural
+import GHC.Float (Float(..), isFloatInfinite, isFloatNaN)
 
-import Prelude (($), (.), Maybe(..), Word(..), Int(..))
+import Prelude (($), (.), (||), (/=), Ord(..), Maybe(..), Word(..), Int(..))
 
 import Loomeric.Data.Conversions.Integer
 import Loomeric.Data.Conversions.Rational
@@ -33,3 +34,8 @@ instance Countable Rational where
     toNumber x = case (numerator x, denominator x) of
         (i, 1) -> toNumber i
         _      -> (Just x, Nothing, Nothing)
+
+instance Countable Float where
+    toNumber x = if 0 /= isFloatNaN x || 0 /= isFloatInfinite x then
+        (Nothing, Nothing, Nothing) else
+        toNumber $ toRational x
