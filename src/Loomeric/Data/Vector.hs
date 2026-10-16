@@ -131,3 +131,8 @@ instance (Ring a, GenericVector n a, coordN ~ CoordNum s, HasField s (Vector n a
 
 instance (GenericVector n a, ExponentialField a) => Normed a (Vector n a) where
     norm x = sqrt $ linearCombination $ ozip x x
+
+instance (GenericVector n a, VectorSpace c a (Vector n a), ExponentialField a) => NormedVectorSpace c a (Vector n a)
+
+instance (GenericVector n a, NormedVectorSpace c a (Vector n a)) => InnerProductSpace c a (Vector n a)  where
+    dot x y = linearCombination $ ozip x y
