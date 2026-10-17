@@ -76,18 +76,18 @@ instance Ring a => Module a (Complex a)
 instance ExponentialField a => Normed a (Complex a) where
     norm (x :+ x') = sqrt $ x * x + x' * x'
 
-instance Field a => VectorSpace [ "real", "imag" ] a (Complex a)
+instance Field a => VectorSpace (Complex a) a [ "real", "imag" ]
 
-instance Ring a => HasCoordinate "real" a (Complex a) where
+instance Ring a => HasCoordinate (Complex a) a "real" where
     basisVec = one :+ zero
     coord = realPart
 
-instance Ring a => HasCoordinate "imag" a (Complex a) where
+instance Ring a => HasCoordinate (Complex a) a "imag" where
     basisVec = zero :+ one
     coord = imagPart
 
-instance (Ring a, HasCoordinate s a (Complex a)) => HasField (s :: Symbol) (Complex a) a where
-    getField = coord @s
+instance (Ring a, HasCoordinate (Complex a) a s) => HasField (s :: Symbol) (Complex a) a where
+    getField = coord @_ @_ @s
 
 instance {-# OVERLAPPING #-} ExponentialField a => HasField "r" (Complex a) a where
     getField = norm

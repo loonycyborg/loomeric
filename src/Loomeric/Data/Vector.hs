@@ -109,9 +109,9 @@ instance (Ring a, GenericVector n a, MonoZip (Vector n a)) => AdditiveGroup (Vec
 instance (Ring a, GenericVector n a, MonoZip (Vector n a)) => SemiModule a (Vector n a)
 instance (Ring a, GenericVector n a, MonoZip (Vector n a)) => Module a (Vector n a)
 
-instance Field a => VectorSpace ["x", "y"] a (Vector2D a)
-instance Field a => VectorSpace ["x", "y", "z"] a (Vector3D a)
-instance Field a => VectorSpace ["x", "y", "z", "w"] a (Vector4D a)
+instance Field a => VectorSpace (Vector2D a) a ["x", "y"]
+instance Field a => VectorSpace (Vector3D a) a ["x", "y", "z"]
+instance Field a => VectorSpace (Vector4D a) a ["x", "y", "z", "w"]
 
 type CoordNum :: Symbol -> Nat
 type family CoordNum s where
@@ -120,7 +120,7 @@ type family CoordNum s where
     CoordNum "z" = 2
     CoordNum "w" = 3
 
-instance (Ring a, GenericVector n a, coordN ~ CoordNum s, HasField s (Vector n a) a, KnownNat coordN, KnownNat n) => HasCoordinate (s :: Symbol) a (Vector n a) where
+instance (Ring a, GenericVector n a, coordN ~ CoordNum s, HasField s (Vector n a) a, KnownNat coordN, KnownNat n) => HasCoordinate (Vector n a) a (s :: Symbol) where
     basisVec = let dim_coord = natVal $ Proxy @coordN
                    max_coord = natVal $ Proxy @n
                    bool2a :: Bool -> a
@@ -132,7 +132,7 @@ instance (Ring a, GenericVector n a, coordN ~ CoordNum s, HasField s (Vector n a
 instance (GenericVector n a, ExponentialField a) => Normed a (Vector n a) where
     norm x = sqrt $ linearCombination $ ozip x x
 
-instance (GenericVector n a, VectorSpace c a (Vector n a), ExponentialField a) => NormedVectorSpace c a (Vector n a)
+instance (GenericVector n a, VectorSpace (Vector n a) a c, ExponentialField a) => NormedVectorSpace (Vector n a) a c
 
-instance (GenericVector n a, NormedVectorSpace c a (Vector n a)) => InnerProductSpace c a (Vector n a)  where
+instance (GenericVector n a, NormedVectorSpace (Vector n a) a c) => InnerProductSpace (Vector n a) a c where
     dot x y = linearCombination $ ozip x y
