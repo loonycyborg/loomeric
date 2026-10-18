@@ -11,7 +11,7 @@ import Loomeric.Algebra.Module
 import Loomeric.Algebra.Group
 import Loomeric.Algebra.Field
 
-class (Module s v, AdditiveGroup v, Field s, Coords coords v s, 1 <= Dimension coords, All (HasCoordinate v s) coords) => VectorSpace v s (coords :: [Symbol]) | v -> coords s where
+class (Module s v, AdditiveGroup v, Field s, 1 <= Dimension coords, All (HasCoordinate v s) coords) => VectorSpace v s (coords :: [Symbol]) | v -> coords s where
     (^/) :: v -> s -> v
     x ^/ y = x ^* inverse y
     (/^) :: s -> v -> v
@@ -41,8 +41,3 @@ type family Dimension sl where
 class HasCoordinate v s (c :: Symbol) | c v -> s where
     basisVec :: v
     coord :: v -> s
-
-type Coords :: [Symbol] -> Type -> Type -> Constraint
-type family Coords sl v s where
-    Coords '[]     v s = ()
-    Coords (c : l) v s = (HasCoordinate v s c, Coords l v s)
