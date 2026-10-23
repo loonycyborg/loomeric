@@ -3,10 +3,10 @@
 {-# OPTIONS_GHC -fplugin GHC.TypeLits.KnownNat.Solver #-}
 {-# LANGUAGE DataKinds, GADTs, TypeFamilyDependencies, NoStarIsType, TypeAbstractions, UndecidableInstances #-}
 module Loomeric.Data.Peano where
-import Prelude (error, ($), Int, Integer, Show(..), Eq(..), Bool(..), Either(..), otherwise, Enum(..), (||), Ordering (EQ, LT, GT), Semigroup(..))
+import Prelude (error, ($), Int, Integer, Show(..), Eq(..), Ord(..), Bool(..), Either(..), otherwise, Enum(..), (||), Ordering (EQ, LT, GT), Semigroup(..))
 import Data.Kind
 import Data.Maybe
-import GHC.TypeNats
+import GHC.TypeNats hiding (cmpNat)
 import Data.Type.Bool
 import Data.Type.Equality
 import Control.Category
@@ -29,10 +29,15 @@ data SomePeano = forall n . KnownNat n => SomePeano (Peano n)
 
 deriving instance Show SomePeano
 instance Eq SomePeano where
-    (SomePeano Zero)     == (SomePeano Zero)     = True
-    x                    == (SomePeano Zero)     = False
-    (SomePeano Zero)     == x                    = False
-    (SomePeano (Succ x)) == (SomePeano (Succ y)) = SomePeano x == SomePeano y
+    (SomePeano x) == (SomePeano y) = case sameNat x y of
+        Just Refl -> True
+        _         -> False
+
+instance Ord SomePeano where
+    compare (SomePeano x) (SomePeano y) = case cmpNat x y of
+        CLT Refl -> LT
+        CEQ Refl Refl -> EQ
+        CGT Refl -> GT
 
 instance Enum SomePeano where
     toEnum = fromNatural . absG . toInteger
@@ -75,6 +80,12 @@ instance AdditivePartialGroup SomePeano where
     (-!!) = ((.) . (.)) fromJust (-?) -- Authentic -!! implementation would require unsafeCoerce to force b <= a to be true
                                       -- but that can directly cause segfaults which is even worse than integer underflow
 
+instance OrderedSemiring SomePeano where
+    type Signing SomePeano = SomeSPeano
+    toSigned (SomePeano x) = SomeSPeano $ SPeano x Zero
+    signum (SomePeano Zero) = zero
+    signum (SomePeano _) = one
+
 instance PeanoSystem SomePeano where
     increment (SomePeano x) = SomePeano $ Succ x
     decrement (SomePeano Zero)     = Nothing
@@ -101,6 +112,15 @@ data SomeSPeano where
     SomeSPeano :: (KnownNat a, KnownNat b) => SPeano a b -> SomeSPeano
 
 deriving instance Show SomeSPeano
+instance Eq SomeSPeano where
+    (SomeSPeano (_ :: SPeano x x')) == (SomeSPeano (_ :: SPeano y y')) = case sameNat (natSing @(x + y')) (natSing @(y + x')) of
+        Just Refl -> True
+        _         -> False
+instance Ord SomeSPeano where
+    compare (SomeSPeano (_ :: SPeano x x')) (SomeSPeano (_ :: SPeano y y')) = case cmpNat (natSing @(x + y')) (natSing @(y + x')) of
+        CLT Refl -> LT
+        CGT Refl -> GT
+        CEQ Refl Refl -> EQ
 
 addSP :: (KnownNat a, KnownNat b) => SPeano a b -> SPeano c d -> SPeano (a + c) (b + d)
 addSP (SPeano x x') (SPeano y y') = SPeano (addP x y) (addP x' y')
@@ -135,6 +155,20 @@ instance Ring SomeSPeano where
     fromInteger n = case (signum n, fromNatural $ absG n) of
         (-1, SomePeano x) -> SomeSPeano $ SPeano Zero x
         (_ , SomePeano x) -> SomeSPeano $ SPeano x Zero
+
+
+instance OrderedSemiring SomeSPeano where
+    type Signing SomeSPeano = SomeSPeano
+    signum (SomeSPeano (_ :: SPeano x x')) = case cmpNat (natSing @x) (natSing @x') of
+        CLT Refl      -> zero - one
+        CGT Refl      -> one
+        CEQ Refl Refl -> zero
+
+instance OrderedRing SomeSPeano where
+    type Unsigning SomeSPeano = SomePeano
+    toUnsignedUnsafe (SomeSPeano (SPeano (x :: Peano n1) (x' :: Peano n2))) = case isLE (natSing @n2) (natSing @n1) of
+        Just Refl -> SomePeano $ subP x x'
+        Nothing   -> error "Invalid conversion to unsigned"
 
 instance ToInteger SomeSPeano where
     toInteger (SomeSPeano (SPeano x x')) = toInteger (SomePeano x) - toInteger (SomePeano x')
