@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilies, DataKinds, OverloadedRecordDot #-}
 module Loomeric.Data.Quaternion where
 
 import Prelude (($), (.), Show(..), Eq(..), Foldable(..))
@@ -59,3 +59,23 @@ instance ExponentialField a => Field (Quaternion a) where
 
 instance ExponentialField a => InvolutionRing (Quaternion a) where
     conjugate (Quaternion s v) = Quaternion s (negate v)
+
+instance Field a => VectorSpace (Quaternion a) a [ "s", "x", "y", "z" ]
+
+instance Field a => HasCoordinate (Quaternion a) a "s" where
+    basisVec = Quaternion one zero
+    coord = (.s)
+
+instance Field a => HasCoordinate (Quaternion a) a "x" where
+    basisVec = Quaternion zero (Vector3D one zero zero)
+    coord = (.x) . (.v)
+
+instance Field a => HasCoordinate (Quaternion a) a "y" where
+    basisVec = Quaternion zero (Vector3D zero one zero)
+    coord = (.y) . (.v)
+
+instance Field a => HasCoordinate (Quaternion a) a "z" where
+    basisVec = Quaternion zero (Vector3D zero zero one)
+    coord = (.z) . (.v)
+
+instance ExponentialField a => NormedVectorSpace (Quaternion a) a [ "s", "x", "y", "z" ]
