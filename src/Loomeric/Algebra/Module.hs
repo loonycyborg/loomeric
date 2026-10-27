@@ -24,6 +24,7 @@ instance Semiring a => SemiModule a a where
     (^*) = (*)
 
 class SemiModule s a => Normed s a | a -> s where
+    normSquared :: a -> s
     norm :: a -> s
 
 instance SemiModule Int Float where

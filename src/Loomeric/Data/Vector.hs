@@ -130,9 +130,15 @@ instance (Ring a, GenericVector n a, coordN ~ CoordNum s, HasField s (Vector n a
     coord = getField @s
 
 instance (GenericVector n a, ExponentialField a) => Normed a (Vector n a) where
-    norm x = sqrt $ linearCombination $ ozip x x
+    normSquared x = linearCombination $ ozip x x
+    norm = sqrt . normSquared 
 
 instance (GenericVector n a, VectorSpace (Vector n a) a c, ExponentialField a) => NormedVectorSpace (Vector n a) a c
 
 instance (GenericVector n a, NormedVectorSpace (Vector n a) a c) => InnerProductSpace (Vector n a) a c where
     dot x y = linearCombination $ ozip x y
+    cross = error "Cross product not defined"
+
+instance {-# OVERLAPS #-} (GenericVector 3 a, NormedVectorSpace (Vector3D a) a '["x", "y", "z"]) => InnerProductSpace (Vector3D a) a '["x", "y", "z"] where
+    dot x y = linearCombination $ ozip x y
+    cross (Vector3D x1 x2 x3) (Vector3D y1 y2 y3) = Vector3D (x2*y3 - x3*y2) (x3*y1 - x1*y3) (x1*y2 - x2*y1)

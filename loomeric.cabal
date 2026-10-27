@@ -26,6 +26,7 @@ library
                      Loomeric.Data.Complex
                      Loomeric.Data.Integer
                      Loomeric.Data.Vector
+                     Loomeric.Data.Quaternion
                      Loomeric.Algebra.Field
                      Loomeric.Algebra.Module
                      Loomeric.Algebra.VectorSpace

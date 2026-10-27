@@ -4,6 +4,7 @@ module Loomeric.Algebra.VectorSpace where
 import GHC.TypeLits
 import Data.Kind
 import Data.Proxy
+import Data.Void
 
 import Generics.SOP
 
@@ -29,8 +30,9 @@ class (VectorSpace v s coords, Normed s v) => NormedVectorSpace v s coords | v -
 
 class (NormedVectorSpace v s coords) => InnerProductSpace v s coords | v -> coords s where
     dot :: v -> v -> s
+    cross :: v -> CrossArgs v coords
 
-infixr 8 `dot`
+infixr 8 `dot`, `cross`
 
 type Dimension :: [Symbol] -> Nat
 type family Dimension sl where
@@ -41,3 +43,9 @@ type family Dimension sl where
 class HasCoordinate v s (c :: Symbol) | c v -> s where
     basisVec :: v
     coord :: v -> s
+
+type CrossArgs :: Type -> [Symbol] -> Type
+type family CrossArgs a coords where
+    CrossArgs a '[ _ ]   = Void
+    CrossArgs a '[_, _]  = a
+    CrossArgs a (x : xs) = a -> CrossArgs a xs

@@ -74,7 +74,8 @@ instance (ExponentialField a, Eq a, Ord a, TrigonometricField a) => ExponentialF
 instance Semiring a => SemiModule a (Complex a)
 instance Ring a => Module a (Complex a)
 instance ExponentialField a => Normed a (Complex a) where
-    norm (x :+ x') = sqrt $ x * x + x' * x'
+    normSquared (x :+ x') = x * x + x' * x'
+    norm = sqrt . normSquared
 
 instance Field a => VectorSpace (Complex a) a [ "real", "imag" ]
 

@@ -1,0 +1,61 @@
+{-# LANGUAGE TypeFamilies #-}
+module Loomeric.Data.Quaternion where
+
+import Prelude (($), (.), Show(..), Eq(..), Foldable(..))
+
+import Generics.SOP
+import Loomeric.Data.Vector
+import Loomeric.Algebra.Group
+import Loomeric.Algebra.Ring
+import Loomeric.Algebra.Module
+import Loomeric.Algebra.Field
+import Loomeric.Algebra.VectorSpace
+import Data.MonoTraversable
+
+data Quaternion a where
+    Quaternion :: Field a => { s :: a, v :: Vector3D a } -> Quaternion a
+
+deriving instance Show a => Show (Quaternion a)
+deriving instance Eq a => Eq (Quaternion a)
+deriving instance Foldable Quaternion
+type instance Element (Quaternion a) = a
+instance MonoFoldable (Quaternion a)
+instance MonoFunctor (Quaternion a) where
+    omap f (Quaternion s v) = Quaternion (f s) (omap f v)
+
+instance AdditiveSemigroup (Quaternion a) where
+    Quaternion s1 v1 + Quaternion s2 v2 = Quaternion (s1 + s2) (v1 + v2)
+
+instance Field a => AdditiveMonoid (Quaternion a) where
+    zero = Quaternion zero zero
+
+instance Field a => AdditiveGroup (Quaternion a) where
+    Quaternion s1 v1 - Quaternion s2 v2 = Quaternion (s1 - s2) (v1 - v2)
+    negate (Quaternion s v) = Quaternion (negate s) (negate v)
+
+instance Field a => SemiModule a (Quaternion a)
+instance Field a => Module a (Quaternion a)
+instance ExponentialField a => Normed a (Quaternion a) where
+    normSquared x = ofoldl1Ex' (+) $ omap pow2 x where
+        pow2 x = x * x
+    norm = sqrt . normSquared
+
+instance ExponentialField a => MultiplicativeSemigroup (Quaternion a) where
+    Quaternion s1 v1 * Quaternion s2 v2 = Quaternion (s1 * s2 - v1 `dot` v2) (s1 *^ v2 + s2 *^ v1 + v1 `cross` v2)
+
+instance ExponentialField a => MultiplicativeMonoid (Quaternion a) where
+    one = Quaternion one zero
+
+instance ExponentialField a => MultiplicativeGroup (Quaternion a) where
+    inverse x@(Quaternion s v) = Quaternion (s / normSquared x) (negate v ^/ normSquared x)
+    x / y = x * inverse y
+
+instance ExponentialField a => Semiring (Quaternion a) where
+    fromNatural n = Quaternion (fromNatural n) zero
+instance ExponentialField a => Ring (Quaternion a) where
+    fromInteger n = Quaternion (fromInteger n) zero
+instance ExponentialField a => Field (Quaternion a) where
+    fromRational n = Quaternion (fromRational n) zero
+
+instance ExponentialField a => InvolutionRing (Quaternion a) where
+    conjugate (Quaternion s v) = Quaternion s (negate v)
