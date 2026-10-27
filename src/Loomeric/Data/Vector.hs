@@ -133,7 +133,7 @@ instance (GenericVector n a, ExponentialField a) => Normed a (Vector n a) where
     normSquared x = linearCombination $ ozip x x
     norm = sqrt . normSquared 
 
-instance (GenericVector n a, VectorSpace (Vector n a) a c, ExponentialField a) => NormedVectorSpace (Vector n a) a c
+instance (GenericVector n a, VectorSpace (Vector n a) a c, ExponentialField a, Eq a) => NormedVectorSpace (Vector n a) a c
 
 instance (GenericVector n a, NormedVectorSpace (Vector n a) a c) => InnerProductSpace (Vector n a) a c where
     dot x y = linearCombination $ ozip x y

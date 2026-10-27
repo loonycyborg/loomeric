@@ -1,10 +1,12 @@
-{-# LANGUAGE DataKinds, TypeFamilies, FunctionalDependencies, AllowAmbiguousTypes, UndecidableInstances, UndecidableSuperClasses #-}
+{-# LANGUAGE DefaultSignatures, DataKinds, TypeFamilies, FunctionalDependencies, AllowAmbiguousTypes, UndecidableInstances, UndecidableSuperClasses #-}
 module Loomeric.Algebra.VectorSpace where
 
 import GHC.TypeLits
 import Data.Kind
 import Data.Proxy
 import Data.Void
+
+import Prelude (Eq(..), (==), otherwise)
 
 import Generics.SOP
 
@@ -26,7 +28,11 @@ class (Module s v, AdditiveGroup v, Field s, 1 <= Dimension coords, All (HasCoor
         f :: forall (n :: Symbol) . HasCoordinate v s n => K s n
         f = K (coord @v @s @n x)
 
-class (VectorSpace v s coords, Normed s v) => NormedVectorSpace v s coords | v -> coords s
+class (VectorSpace v s coords, Normed s v) => NormedVectorSpace v s coords | v -> coords s where
+    normalizeVec :: v -> v
+    default normalizeVec :: Eq s => v -> v
+    normalizeVec x | norm x == zero = zero
+                   | otherwise      = x ^/ norm x
 
 class (NormedVectorSpace v s coords) => InnerProductSpace v s coords | v -> coords s where
     dot :: v -> v -> s

@@ -40,24 +40,24 @@ instance ExponentialField a => Normed a (Quaternion a) where
         pow2 x = x * x
     norm = sqrt . normSquared
 
-instance ExponentialField a => MultiplicativeSemigroup (Quaternion a) where
+instance (ExponentialField a, Eq a) => MultiplicativeSemigroup (Quaternion a) where
     Quaternion s1 v1 * Quaternion s2 v2 = Quaternion (s1 * s2 - v1 `dot` v2) (s1 *^ v2 + s2 *^ v1 + v1 `cross` v2)
 
-instance ExponentialField a => MultiplicativeMonoid (Quaternion a) where
+instance (ExponentialField a, Eq a) => MultiplicativeMonoid (Quaternion a) where
     one = Quaternion one zero
 
-instance ExponentialField a => MultiplicativeGroup (Quaternion a) where
+instance (ExponentialField a, Eq a) => MultiplicativeGroup (Quaternion a) where
     inverse x@(Quaternion s v) = Quaternion (s / normSquared x) (negate v ^/ normSquared x)
     x / y = x * inverse y
 
-instance ExponentialField a => Semiring (Quaternion a) where
+instance (ExponentialField a, Eq a) => Semiring (Quaternion a) where
     fromNatural n = Quaternion (fromNatural n) zero
-instance ExponentialField a => Ring (Quaternion a) where
+instance (ExponentialField a, Eq a) => Ring (Quaternion a) where
     fromInteger n = Quaternion (fromInteger n) zero
-instance ExponentialField a => Field (Quaternion a) where
+instance (ExponentialField a, Eq a) => Field (Quaternion a) where
     fromRational n = Quaternion (fromRational n) zero
 
-instance ExponentialField a => InvolutionRing (Quaternion a) where
+instance (ExponentialField a, Eq a) => InvolutionRing (Quaternion a) where
     conjugate (Quaternion s v) = Quaternion s (negate v)
 
 instance Field a => VectorSpace (Quaternion a) a [ "s", "x", "y", "z" ]
@@ -78,4 +78,12 @@ instance Field a => HasCoordinate (Quaternion a) a "z" where
     basisVec = Quaternion zero (Vector3D zero zero one)
     coord = (.z) . (.v)
 
-instance ExponentialField a => NormedVectorSpace (Quaternion a) a [ "s", "x", "y", "z" ]
+instance (ExponentialField a, Eq a) => NormedVectorSpace (Quaternion a) a [ "s", "x", "y", "z" ]
+
+instance (ExponentialField a, TrigonometricField a, Eq a) => ExponentialSemiring (Quaternion a) where
+    x ** y = exp $ y * log x
+
+instance (ExponentialField a, TrigonometricField a, Eq a) => ExponentialField (Quaternion a) where
+    exp x = exp x.s *^ Quaternion (cos (norm x.v)) (normalizeVec x.v ^* sin (norm x.v))
+    log x = Quaternion (log x.s) (if norm x == zero then zero else normalizeVec x.v ^* acos (x.s / norm x))
+    sqrt x = x ** (one / (one + one))
