@@ -153,4 +153,4 @@ toVector x = to $ SOP $ Z $ htoI (hcpure (Proxy @(HasCoordinate v s)) f :: NP (K
         f = K (coord @v @s @n x)
 
 fromVector :: forall v s coords n cn . (GenericVector n s, VectorSpace v s coords, VectorSpace (Vector n s) s cn, n ~ Dimension coords) => Vector n s -> v
-fromVector x = sum $ zipWith (*^) (coords @(Vector n s) @s @cn x) (basis @v @s @coords)
+fromVector x = sum $ zipWith (*^) (coords x) basis
