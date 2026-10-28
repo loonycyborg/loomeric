@@ -1,4 +1,13 @@
-{-# LANGUAGE DefaultSignatures, DataKinds, TypeFamilies, FunctionalDependencies, AllowAmbiguousTypes, UndecidableInstances, UndecidableSuperClasses #-}
+{-# LANGUAGE 
+      DefaultSignatures
+    , DataKinds
+    , TypeFamilies
+    , FunctionalDependencies
+    , AllowAmbiguousTypes
+    , UndecidableInstances
+    , UndecidableSuperClasses
+    , RequiredTypeArguments
+#-}
 module Loomeric.Algebra.VectorSpace where
 
 import GHC.TypeLits
@@ -50,8 +59,17 @@ class HasCoordinate v s (c :: Symbol) | c v -> s where
     basisVec :: v
     coord :: v -> s
 
+coordByIndex :: forall v s coords . forall (n :: Nat) -> (VectorSpace v s coords, HasCoordinate v s (Index2Coord coords n)) => v -> s
+coordByIndex n = coord @v @s @(Index2Coord coords n)
+
 type CrossArgs :: Type -> [Symbol] -> Type
 type family CrossArgs a coords where
     CrossArgs a '[ _ ]   = Void
     CrossArgs a '[_, _]  = a
     CrossArgs a (x : xs) = a -> CrossArgs a xs
+
+type Index2Coord :: [Symbol] -> Nat -> Symbol
+type family Index2Coord coords n where
+    Index2Coord '[]      n = TypeError (Text "Vector coordinate index out of range")
+    Index2Coord (x : _ ) 0 = x
+    Index2Coord (_ : xs) n = Index2Coord xs (n-1)
