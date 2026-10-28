@@ -142,3 +142,11 @@ instance (GenericVector n a, NormedVectorSpace (Vector n a) a c) => InnerProduct
 instance {-# OVERLAPS #-} (GenericVector 3 a, NormedVectorSpace (Vector3D a) a '["x", "y", "z"]) => InnerProductSpace (Vector3D a) a '["x", "y", "z"] where
     dot x y = linearCombination $ ozip x y
     cross (Vector3D x1 x2 x3) (Vector3D y1 y2 y3) = Vector3D (x2*y3 - x3*y2) (x3*y1 - x1*y3) (x1*y2 - x2*y1)
+
+toVector :: forall v s coords n . (
+    Ring s, GenericVector n s, VectorSpace v s coords, n ~ Dimension coords,
+    AllZip (LiftedCoercible (K s) I) coords (VectorCode n s)
+    ) => v -> Vector n s
+toVector x = to $ SOP $ Z $ htoI (hcpure (Proxy @(HasCoordinate v s)) f :: NP (K s) coords) where
+        f :: forall (n :: Symbol) . HasCoordinate v s n => K s n
+        f = K (coord @v @s @n x)
