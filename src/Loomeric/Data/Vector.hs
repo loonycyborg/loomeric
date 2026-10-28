@@ -8,10 +8,11 @@ import Data.Kind
 import Data.Type.Equality
 import Generics.SOP
 import GHC.Records
+import Data.List (zipWith)
 import Data.Maybe
 import Data.Bifunctor
 
-import Prelude (fst, ($), (.), repeat, map, zip, unzip, error, Eq(..), Foldable(..), Show(..), Enum(..), Bool(..))
+import Prelude (fst, ($), (.), repeat, map, zip, unzip, error, Eq(..), Foldable(), Show(..), Enum(..), Bool(..))
 
 import Loomeric.Algebra.VectorSpace
 import Loomeric.Algebra.Ring
@@ -150,3 +151,6 @@ toVector :: forall v s coords n . (
 toVector x = to $ SOP $ Z $ htoI (hcpure (Proxy @(HasCoordinate v s)) f :: NP (K s) coords) where
         f :: forall (n :: Symbol) . HasCoordinate v s n => K s n
         f = K (coord @v @s @n x)
+
+fromVector :: forall v s coords n cn . (GenericVector n s, VectorSpace v s coords, VectorSpace (Vector n s) s cn, n ~ Dimension coords) => Vector n s -> v
+fromVector x = sum $ zipWith (*^) (coords @(Vector n s) @s @cn x) (basis @v @s @coords)
