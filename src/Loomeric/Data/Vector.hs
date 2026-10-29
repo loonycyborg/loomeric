@@ -154,3 +154,40 @@ toVector x = to $ SOP $ Z $ htoI (hcpure (Proxy @(HasCoordinate v s)) f :: NP (K
 
 fromVector :: forall v s coords n cn . (GenericVector n s, VectorSpace v s coords, VectorSpace (Vector n s) s cn, n ~ Dimension coords) => Vector n s -> v
 fromVector x = sum $ zipWith (*^) (coords x) basis
+
+newtype Swizzle (permutation :: [Symbol]) n a = Swizzle { unSwizzle :: Vector n a }
+
+deriving instance Show (Vector n a) => Show (Swizzle permutation n a)
+deriving instance Eq (Vector n a) => Eq (Swizzle permutation n a)
+instance (Ring a, GenericVector n a) => AdditiveSemigroup (Swizzle permutation n a) where
+    x + y = Swizzle $ unSwizzle x + unSwizzle y
+
+instance (Ring a, GenericVector n a) => AdditiveMonoid (Swizzle permutation n a) where
+    zero = Swizzle zero
+
+deriving instance (Ring a, GenericVector n a) => AdditiveGroup (Swizzle permutation n a)
+deriving instance (Ring a, GenericVector n a, MonoZip (Vector n a)) => SemiModule a (Swizzle permutation n a)
+deriving instance (Ring a, GenericVector n a, MonoZip (Vector n a)) => Module a (Swizzle permutation n a)
+
+type family PermutationCoords permutation where
+    PermutationCoords '[ _ ]          = '["x"]
+    PermutationCoords '[ _, _ ]       = '["x", "y"]
+    PermutationCoords '[ _, _, _ ]    = '["x", "y", "z"]
+    PermutationCoords '[ _, _, _, _ ] = '["x", "y", "z", "w"]
+
+type family PermutationPreimage permutation n where
+    PermutationPreimage (x:_)  0 = x
+    PermutationPreimage (_:xs) n = PermutationPreimage xs (n-1)
+
+instance (Field a, 1 <= Dimension coords,
+    coords ~ PermutationCoords permutation, Dimension coords ~ Dimension permutation,
+    All (HasCoordinate (Swizzle permutation n a) a) coords,
+    GenericVector n a) => VectorSpace (Swizzle permutation n a) a coords
+
+instance (
+        CoordNum c <= n - 1, GenericVector n a, Ring a, KnownNat n,
+        HasField (PermutationPreimage permutation (CoordNum c)) (Vector n a) a,
+        KnownNat (CoordNum (PermutationPreimage permutation (CoordNum c)))
+    ) => HasCoordinate (Swizzle permutation n a) a c where
+    basisVec = Swizzle $ basisVec @(Vector n a) @a @(PermutationPreimage permutation (CoordNum c))
+    coord x = coord @(Vector n a) @a @(PermutationPreimage permutation (CoordNum c)) $ unSwizzle x
