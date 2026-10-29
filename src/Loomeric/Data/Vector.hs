@@ -185,7 +185,7 @@ instance (Field a, 1 <= Dimension coords,
     GenericVector n a) => VectorSpace (Swizzle permutation n a) a coords
 
 instance (
-        CoordNum c <= n - 1, GenericVector n a, Ring a, KnownNat n,
+        GenericVector n a, Ring a, KnownNat n,
         HasField (PermutationPreimage permutation (CoordNum c)) (Vector n a) a,
         KnownNat (CoordNum (PermutationPreimage permutation (CoordNum c)))
     ) => HasCoordinate (Swizzle permutation n a) a c where
