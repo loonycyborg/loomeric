@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilyDependencies, PatternSynonyms, ViewPatterns, DataKinds, RequiredTypeArguments, MagicHash, DerivingStrategies, UndecidableInstances, DuplicateRecordFields #-}
+{-# LANGUAGE TypeFamilyDependencies, PatternSynonyms, ViewPatterns, DataKinds, RequiredTypeArguments, MagicHash, GeneralisedNewtypeDeriving, UndecidableInstances, DuplicateRecordFields #-}
 module Loomeric.Data.Vector where
 
 import Data.MonoTraversable
@@ -35,11 +35,8 @@ pattern Vector4D :: Unbox a => a -> a -> a -> a -> Vector 4 a
 pattern Vector4D x y z w <- (otoList -> [x, y, z, w]) where
     Vector4D x y z w = vector 4 [x, y, z, w]
 
-instance (Eq a, Unbox a, KnownNat n, KnownNat (n-1)) => Eq (Vector n a) where
-    x == y = all coord_eq [0..fromInteger $ natVal' (proxy# @(n-1))] where
-        coord_eq i = vectorIndexUnsafe x i == vectorIndexUnsafe y i
-
-deriving newtype instance Unbox a => MonoFoldable (Vector n a)
+deriving instance (Eq a, Unbox a, KnownNat n, KnownNat (n-1)) => Eq (Vector n a)
+deriving instance Unbox a => MonoFoldable (Vector n a)
 
 vector :: forall n -> (Unbox a, KnownNat n) => [a] -> Vector n a
 vector n = Vector . check_length . Unboxed.fromListN (fromInteger $ natVal' (proxy# @n)) where
@@ -61,8 +58,7 @@ vectorCons a (Vector x) = Vector $ Unboxed.cons a x
 vectorUncons :: Unbox a => Vector n a -> (a, Vector (n-1) a)
 vectorUncons (Vector x) = (Unboxed.unsafeHead x, Vector $ Unboxed.unsafeTail x)
 
-instance Unbox a => MonoFunctor (Vector n a) where
-    omap f (Vector a) = Vector $ Unboxed.map f a
+deriving instance Unbox a => MonoFunctor (Vector n a)
 
 instance (Unbox a, KnownNat n, KnownNat (n-1)) => MonoZip (Vector n a) where
     ozip x y = [(vectorIndexUnsafe x i, vectorIndexUnsafe y i) | i <- [0..fromInteger $ natVal' (proxy# @(n-1))]]
@@ -71,6 +67,7 @@ instance (Unbox a, KnownNat n, KnownNat (n-1)) => MonoZip (Vector n a) where
         (ls, rs) = unzip l
 
 type instance Element (Vector n a) = a
+
 instance (AdditiveSemigroup a, MonoZip (Vector n a)) => AdditiveSemigroup (Vector n a) where
     x + y = ozipWith (+) x y
 
@@ -132,9 +129,9 @@ instance (Ring a, Unbox a, KnownNat n, KnownNat (n-1)) => AdditiveSemigroup (Swi
 instance (Ring a, Unbox a, KnownNat n, KnownNat (n-1)) => AdditiveMonoid (Swizzle permutation n a) where
     zero = Swizzle zero
 
-deriving newtype instance (Ring a, Unbox a, KnownNat n, KnownNat (n-1)) => AdditiveGroup (Swizzle permutation n a)
-deriving newtype instance (Ring a, Unbox a, KnownNat n, KnownNat (n-1), MonoZip (Vector n a)) => SemiModule a (Swizzle permutation n a)
-deriving newtype instance (Ring a, Unbox a, KnownNat n, KnownNat (n-1), MonoZip (Vector n a)) => Module a (Swizzle permutation n a)
+deriving instance (Ring a, Unbox a, KnownNat n, KnownNat (n-1)) => AdditiveGroup (Swizzle permutation n a)
+deriving instance (Ring a, Unbox a, KnownNat n, KnownNat (n-1), MonoZip (Vector n a)) => SemiModule a (Swizzle permutation n a)
+deriving instance (Ring a, Unbox a, KnownNat n, KnownNat (n-1), MonoZip (Vector n a)) => Module a (Swizzle permutation n a)
 
 type family PermutationCoords permutation where
     PermutationCoords '[ _ ]          = '["x"]
